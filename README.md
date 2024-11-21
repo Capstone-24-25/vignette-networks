@@ -3,7 +3,7 @@ Group 9 Vignette on network analysis
 
 
 
-DATA: link
+DATA: https://snap.stanford.edu/data/congress-twitter.html
 
 Description:
 
