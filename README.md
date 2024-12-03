@@ -1,6 +1,12 @@
 # vignette-networks
 Group 9 Vignette on network analysis
 
+Sources:
+
+Paper corresponding to dataset: https://pmc.ncbi.nlm.nih.gov/articles/PMC10493874/#sec0003
+
+Network vis: https://kateto.net/netscix2016.html
+
 
 
 DATA: https://snap.stanford.edu/data/congress-twitter.html
