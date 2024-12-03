@@ -24,7 +24,7 @@ get_edges_in <- function(i, .json) {
 }
 
 # Function to convert Congress data from .json to dataframe
-json_to_df <- function(.json) {
+cnet_json_to_df <- function(.json) {
   out <- lapply(1:475, get_edges_in, .json = .json) %>%
     bind_rows()
   return(out)
@@ -34,7 +34,8 @@ json_to_df <- function(.json) {
 create_cnet_igraph <- function(json_to_df.out) {
   cnet_node_attributes <- read_csv("data/congress_node_attributes.csv",
                                    show_col_types = FALSE)
-  out <- graph_from_data_frame(cnet_df, directed = TRUE, vertices = cnet_node_attributes)
+  out <- graph_from_data_frame(json_to_df.out, 
+                               directed = TRUE, vertices = cnet_node_attributes)
   
   return(out)
 }
