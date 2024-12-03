@@ -7,3 +7,53 @@ format: html
 
 # Overview
 For this vignette, we will be using network analysis. Network analysis helps us understand the structure of a relationship in social networks; in this case, the Twitter interactions between different political parties. Our objective in this vignette is to use network analysis to help us identify the most influential people or groups and the defining characteristics of certain groups of users. Through this we can identify network centrality and identify crucial points.
+
+# Data
+The `congress_network_data.json` file is a network that represents the Twitter interaction network for the 117th United States Congress, taking into account the House of Representatives as well as the Senate. The `congress_node_attributes` file contains vertex attributes that include the name of the congressmen, their respective chamber, party affiliation, state, and Census Bureau-designated region of the state.
+
+# Methodology
+We perform our analysis in R using the `rjson` and `igraph` packages. We read in the data from the `rjson` file using our preprocessing script, as shown below. To read in the data from a `json` file, we transformed the data into a dataframe.
+
+```{r}
+# preprocessing.R
+library(tidyverse)
+library(rjson)
+library(igraph)
+
+# Function to get edges going into the ith node from .json file into dataframe
+get_edges_in <- function(i, .json) {
+  
+  # Get list of edges going in
+  from <- .json[[1]]$inList[[i]] 
+  if (length(from) != 0) {
+    from <- from + 1
+  }
+  
+  # Create vector of target node
+  to <- rep(i, length(from))
+  
+  # Get corresponding weights
+  weight <- .json[[1]]$inWeight[[i]]
+  
+  # Bind to existing dataframe
+  out <- data.frame(from = from, to = to, weight = weight)
+  
+  return(out)
+}
+
+# Function to convert Congress data from .json to dataframe
+json_to_df <- function(.json) {
+  out <- lapply(1:475, get_edges_in, .json = .json) %>%
+    bind_rows()
+  return(out)
+}
+
+# Function to create Congress igraph with node attributes from dataframe
+create_cnet_igraph <- function(json_to_df.out) {
+  cnet_node_attributes <- read_csv("data/congress_node_attributes.csv",
+                                   show_col_types = FALSE)
+  out <- graph_from_data_frame(cnet_df, directed = TRUE, vertices = cnet_node_attributes)
+  
+  return(out)
+}
+```
