@@ -66,14 +66,18 @@ cnet_node_attributes <- read_csv(here::here("data/congress_node_attributes.csv")
                                    show_col_types = FALSE)
 ```
 
-The main package in R used for making network visualizations is `igraph`. Below we shall show how you can visualize the entire network.
+The main package in R used for making network visualizations is `igraph`. Below we shall try to create a visualization of the entire network.
+
 
 ```{r}
 g1 <- graph_from_data_frame(network_df, 
                       directed = TRUE, 
                       vertices = cnet_node_attributes)
-
 plot(g1)
+
 ```
 
 
+As we can see, the plot is impossible to read, there are too many nodes, and we did not specify what attribute should be used as the vertex labels.
+
+To fix this, we are going to randomly sample 
