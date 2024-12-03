@@ -6,12 +6,15 @@ format: html
 ---
 
 # Overview
-For this vignette, we will be using network analysis. Network analysis helps us understand the structure of a relationship in social networks; in this case, the Twitter interactions between different political parties. Our objective in this vignette is to use network analysis to help us identify the most influential people or groups and the defining characteristics of certain groups of users. Through this we can identify network centrality and identify crucial points.
+
+In this vignette, we will explore basic network analysis using the `igraph` package on the `congress_network` dataset. Network analysis helps us explore and understand the structure of a network; in this case, the Twitter interactions of the 117th Congress. Our objective in this vignette is to analyze whether particular attributes such as party affiliation, chamber, and the geographical region of a member of Congress influences who they interact with on Twitter.
 
 # Data
-The `congress_network_data.json` file is a network that represents the Twitter interaction network for the 117th United States Congress, taking into account the House of Representatives as well as the Senate. The `congress_node_attributes` file contains vertex attributes that include the name of the congressmen, their respective chamber, party affiliation, state, and Census Bureau-designated region of the state.
+
+The `congress_network_data.json` file is a network that represents the Twitter interaction network for the 117th United States Congress, taking into account the House of Representatives as well as the Senate. The `congress_node_attributes` file contains vertex attributes that include the name of the congressperson, their respective chamber, party affiliation, state, and Census Bureau-designated region of the state.
 
 # Methodology
+
 We perform our analysis in R using the `rjson` and `igraph` packages. We read in the data from the `rjson` file using our preprocessing script, as shown below. To read in the data from a `json` file, we transformed the data into a dataframe.
 
 ```{r}
@@ -26,9 +29,9 @@ network_json <- fromJSON(file = here::here("data/congress_network/congress_netwo
 # Use the preprocessing function
 network_df <- cnet_json_to_df(network_json)
 
-# Read in the node attributes
-cnet_node_attributes <- read_csv(here::here("data/congress_node_attributes.csv"),
-                                   show_col_types = FALSE)
+# Create congress twitter graph
+cnet_igraph <- create_cnet_igraph(network_df)
+
 ```
 
 # Important Terms and Information
@@ -48,11 +51,7 @@ The main package in R used for making network visualizations is `igraph`. After 
 
 
 ```{r}
-g1 <- graph_from_data_frame(network_df, 
-                      directed = TRUE, 
-                      vertices = cnet_node_attributes)
-plot(g1)
-
+plot(cnet_igraph)
 ```
 
 
