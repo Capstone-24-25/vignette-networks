@@ -41,9 +41,10 @@ Additionally, network data can be directed or undirected. In a directed network,
 
 The data that we will be analyzing in this vignette is a weighted, directed network. This means that our edges have direction, and that there is a single edge attribute, known as the weight. The edge weights in this data are referred to as transmission weights and they essentially represent the probability that the source retweets, quote tweets, replies to, or mentions the target after the target tweets. 
 
+
 # Data Visualization
 
-The main package in R used for making network visualizations is `igraph`. Below we shall try to create a visualization of the entire network.
+The main package in R used for making network visualizations is `igraph`. After converting the `rjson` file to a dataframe and taking into account the `congress_node_attributes` file, we can use the package `igraph` for making our network visualization. This package allows us to visualize the entire network as well as different different subgroups. We aim to improve both graphs using random sampling. Below we shall try to create a visualization of the entire network.
 
 
 ```{r}
@@ -59,8 +60,15 @@ As we can see, the plot is impossible to read, there are too many nodes, and we 
 
 To fix this, we are going to randomly sample 50 observations from our data and create a subgraph of the entire network using this sample. Reducing the number of nodes we use will drastically improve the visibility of the graph. Additionally we will adjust the size of nodes, remove node labels, color nodes based on party affiliation, and adjust the size of edges based on its weight to further enhance readability.
 
+We then tried creating subgraphs, having filtered the nodes by certain attributes: party and region, as shown below.
 ```{r}
+# nodes filtered by attributes (party and region)
+sub_nodes <- V(g1)[Party %in% c("D", "R") | Region %in% c("Midwest", "South")]
 
+sub_g <- induced_subgraph(g1, vids = sub_nodes)
+
+plot(sub_g)
 ```
+We have the same issue as the our first plot, where it is impossible to read. To address this we will use the same method.
 
 
