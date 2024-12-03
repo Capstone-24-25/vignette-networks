@@ -6,3 +6,4 @@ format: html
 ---
 
 # Overview
+For this vignette, we will be using network analysis. Network analysis helps us understand the structure of a relationship in social networks; in this case, the Twitter interactions between different political parties. Our objective in this vignette is to use network analysis to help us identify the most influential people or groups and the defining characteristics of certain groups of users. Through this we can identify network centrality and identify crucial points.
