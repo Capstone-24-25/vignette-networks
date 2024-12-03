@@ -57,3 +57,13 @@ create_cnet_igraph <- function(json_to_df.out) {
   return(out)
 }
 ```
+
+# Important Terms and Information
+
+When dealing with network data observations are typically referred to as *nodes* or *vertices*, and the connections between them are called *edges*.
+
+*Node attributes* are the properties of individual observations, like someone's age. Whereas *edge attributes* are information about the relationships between nodes, such as the type of relationship or its strength. 
+
+Additionally, network data can be directed or undirected. In a directed network, edges originate from a particular node (known as the *source*) and terminate in another (known as the *target*). In contrast  no such directionality exists for undirected networks. For example, if we had data on a network of people in a gift exchange, this could be represented as a directed network where edges originate from the person giving a gift and terminate at the person receiving that particular gift.
+
+The data that we will be analyzing in this vignette is a weighted, directed network. This means that our edges have direction, and that there is a single edge attribute, known as the weight. The edge weights in this data are referred to as transmission weights and they essentially represent the probability that the source retweets, quote tweets, replies to, or mentions the target after the target tweets. 
