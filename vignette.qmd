@@ -242,11 +242,15 @@ bootstrap.test.results <- matrix(
   dimnames = (list(c("dem", "rep", "house", "senate", "midwest", "west", "south", "northeast"), metrics))
 )
 
+if(FALSE) {
 for (i in 1:length(graphs)) {
   for (j in 1:length(metrics)) {
-    bootstrap.test.results[i,j] <- bootstrap.t.test(cnet_igraph, get(graphs[i]), metrics[j], 10000, "upper")$pval
+    bootstrap.test.results[i,j] <- bootstrap.t.test(cnet_igraph, get(graphs[i]), metrics[j], 10000, "lower")$pval
   }
 }
+}
+
+load(file = "data/bootstrap-test-results.RData")
 
 bootstrap.test.results %>%
   kable()
