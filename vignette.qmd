@@ -74,6 +74,56 @@ plot(sub_g)
 
 We have the same issue as the our first plot, where it is impossible to read. To address this we will use the same method.
 
+Below, you can see that we have taken a random sample of people, having taken these people from our attributes data frame. We then matched these people to their connections in the network data frame and plotted this random sample. We can further reduce the noise by filtering the data based on certain attributes, which although it is not depicted below, can be done.
+
+```{r}
+# sample from node attributes, then name in sample 
+set.seed(123)
+sample_indices <- sample(nrow(cnet_node_attributes), size = 25)
+sample_nodes <- cnet_node_attributes[sample_indices,]
+
+# want to make sure the attributes and nodes match
+id_node <- sample_nodes$name
+id_from <- network_df$from
+id_to <- network_df$to
+net_sam <- data.frame(from = double(),
+                      to = integer(),
+                      weight = double())
+
+for (i in id_node){
+  if (i %in% id_to | i %in% id_from){
+    matches_from <- subset(network_df, from == i)
+    matches_to <- subset(network_df, to == i)
+    net_sam <- rbind(net_sam, matches_from, matches_to)
+  }
+}
+
+net_sam <- subset(net_sam, from %in% sample_nodes$name & to %in% sample_nodes$name)
+
+g2 <- graph_from_data_frame(net_sam,
+                            directed = TRUE,
+                            vertices = sample_nodes)
+
+# colors based on party
+V(g2)$color <- ifelse(V(g2)$Party == "D", "blue", 
+                      ifelse(V(g2)$Party == "R", "red", "gray"))
+
+# color based on weight
+E(g2)$color <- ifelse(E(g2)$weight > .025, "darkred", "black")
+
+plot(g2,
+     edge.width = 2,
+     edge.color = E(g2)$color,
+     edge.curved = 0.2,
+     edge.arrow.size = 0.5,
+     edge.color = "black",
+     vertex.color = V(g2)$color, 
+     vertex.size = 30,
+     vertex.frame.color = "black",
+     vertex.label.color = "white",
+     layout = layout_with_fr)  
+```
+
 # Graph/Subgraph Metrics and Hypothesis Testing
 
 ```{r}
