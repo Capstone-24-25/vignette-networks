@@ -156,16 +156,4 @@ for (i in 1:length(graphs)) {
   }
 }
 
-
-ggplot() +
-  geom_histogram(
-    aes(
-      x = bootstrap.t.test(cnet_igraph, cnet_subgraph_rep, "reciprocity", 10000, "two-tailed")$dist,
-      fill = "skyblue"
-    ),
-    bins = 30
-  ) +
-  theme_minimal()
-
-
 save(bootstrap.test.results, "data/bootstrap-test-results.RData")
