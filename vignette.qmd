@@ -60,6 +60,7 @@ As we can see, the plot is impossible to read, there are too many nodes, and we 
 To fix this, we are going to randomly sample 50 observations from our data and create a subgraph of the entire network using this sample. Reducing the number of nodes we use will drastically improve the visibility of the graph. Additionally we will adjust the size of nodes, remove node labels, color nodes based on party affiliation, and adjust the size of edges based on its weight to further enhance readability.
 
 We then tried creating subgraphs, having filtered the nodes by certain attributes: party and region, as shown below.
+
 ```{r}
 # nodes filtered by attributes (party and region)
 sub_nodes <- V(g1)[Party %in% c("D", "R") | Region %in% c("Midwest", "South")]
@@ -68,6 +69,82 @@ sub_g <- induced_subgraph(g1, vids = sub_nodes)
 
 plot(sub_g)
 ```
+
 We have the same issue as the our first plot, where it is impossible to read. To address this we will use the same method.
 
+# Adjacency Matrices
 
+```{r, cache = TRUE}
+cnet_adj <- as_adjacency_matrix(cnet_igraph)
+
+reorder_cnet_adj <- function(adj_mat, attribute) {
+  node_attributes <- read_csv("data/congress_node_attributes.csv")
+  
+  new_order <- node_attributes %>% 
+    mutate(
+      rand_order = sample(node)
+    ) %>%
+    arrange(
+      get(attribute), rand_order
+    ) %>%
+    mutate(
+      new_order = row_number()
+    ) %>%
+    arrange(
+      node
+    ) %>%
+    pull(
+      new_order
+    )
+  
+  new_adj_mat <- adj_mat
+  for (i in 1:475) {
+    for (j in 1:475) {
+      new_adj_mat[new_order[i], new_order[j]] <- adj_mat[i,j]
+    }
+  }
+  
+  return(new_adj_mat)
+}
+
+cnet_adj_chamber <- reorder_cnet_adj(cnet_adj, "chamber")
+cnet_adj_party <- reorder_cnet_adj(cnet_adj, "party")
+cnet_adj_state <- reorder_cnet_adj(cnet_adj, "state")
+cnet_adj_region <- reorder_cnet_adj(cnet_adj, "region")
+
+cnet_adj_chamber %>%
+  Matrix() %>%
+  image(
+    col.regions = c("black"),
+    sub = NULL,
+    xlab = NULL,
+    ylab = NULL
+  )
+
+cnet_adj_party %>%
+  Matrix() %>%
+  image(
+    col.regions = c("black"),
+    sub = NULL,
+    xlab = NULL,
+    ylab = NULL
+  )
+
+cnet_adj_state %>%
+  Matrix() %>%
+  image(
+    col.regions = c("black"),
+    sub = NULL,
+    xlab = NULL,
+    ylab = NULL
+  )
+
+cnet_adj_region %>%
+  Matrix() %>%
+  image(
+    col.regions = c("black"),
+    sub = NULL,
+    xlab = NULL,
+    ylab = NULL
+  )
+```

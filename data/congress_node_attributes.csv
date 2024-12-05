@@ -1,4 +1,4 @@
-name,Username,Congressperson,Chamber,Party,State,Region,Division
+node,username,congressperson,chamber,party,state,region,division
 1,SenatorBaldwin,Tammy Baldwin,Senate,D,WI,Midwest,East North Central
 2,SenJohnBarrasso,John Barrasso,Senate,R,WY,West,Mountain
 3,SenatorBennet,Michael Bennet,Senate,D,CO,West,Mountain
