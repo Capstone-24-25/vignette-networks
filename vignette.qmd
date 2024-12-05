@@ -181,9 +181,6 @@ graph_metrics %>%
 ```{r, cache = TRUE}
 # bootstrap t-test to compare statistic of a subgraph to the overall graph
 bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lower", "two-tailed")) {
-  if (!is.character(statistic)) {
-    warning("statistic must be a string")
-  }
   
   # get number of nodes in graph and subgraph
   n.graph <- graph %>% length()

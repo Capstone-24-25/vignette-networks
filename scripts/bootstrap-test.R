@@ -3,9 +3,6 @@ library(igraph)
 
 # bootstrap t-test to compare statistic of a subgraph to the overall graph
 bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lower", "two-tailed")) {
-  if (!is.character(statistic)) {
-    warning("statistic must be a string")
-  }
   
   # get number of nodes in graph and subgraph
   n.graph <- graph %>% length()
@@ -158,5 +155,17 @@ for (i in 1:length(graphs)) {
     bootstrap.test.results[i,j] <- bootstrap.t.test(cnet.igraph, get(graphs[i]), metrics[j], 10000)$pval
   }
 }
+
+
+ggplot() +
+  geom_histogram(
+    aes(
+      x = bootstrap.t.test(cnet_igraph, cnet_subgraph_rep, "reciprocity", 10000, "two-tailed")$dist,
+      fill = "skyblue"
+    ),
+    bins = 30
+  ) +
+  theme_minimal()
+
 
 save(bootstrap.test.results, "data/bootstrap-test-results.RData")
