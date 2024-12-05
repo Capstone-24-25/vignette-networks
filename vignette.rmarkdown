@@ -5,6 +5,8 @@ date: today
 format: html
 ---
 
+
+
 # Overview
 
 In this vignette, we will explore basic network analysis using the `igraph` package on the `congress_network` dataset. Network analysis helps us explore and understand the structure of a network; in this case, the Twitter interactions of the 117th Congress. Our objective in this vignette is to analyze whether particular attributes such as party affiliation, chamber, and the geographical region of a member of Congress influences who they interact with on Twitter.
@@ -16,6 +18,8 @@ The `congress_network_data.json` file is a network that represents the Twitter i
 # Methodology
 
 We perform our analysis in R using the `rjson` and `igraph` packages. We read in the data from the `rjson` file using our preprocessing script, as shown below. To read in the data from a `json` file, we transformed the data into a dataframe.
+
+
 
 ```{r}
 source(here::here("scripts/preprocessing.R"))
@@ -36,6 +40,8 @@ cnet_igraph <- create_cnet_igraph(network_df)
 
 ```
 
+
+
 # Important Terms and Information
 
 When dealing with network data observations are typically referred to as *nodes* or *vertices*, and the connections between them are called *edges*.
@@ -52,9 +58,13 @@ The data that we will be analyzing in this vignette is a weighted, directed netw
 The main package in R used for making network visualizations is `igraph`. After converting the `rjson` file to a dataframe and taking into account the `congress_node_attributes` file, we can use the package `igraph` for making our network visualization. This package allows us to visualize the entire network as well as different different subgroups. We aim to improve both graphs using random sampling. Below we shall try to create a visualization of the entire network.
 
 
+
+
 ```{r}
 plot(cnet_igraph)
 ```
+
+
 
 
 As we can see, the plot is impossible to read, there are too many nodes, and we did not specify what attribute should be used as the vertex labels.
@@ -62,6 +72,8 @@ As we can see, the plot is impossible to read, there are too many nodes, and we 
 To fix this, we are going to randomly sample 50 observations from our data and create a subgraph of the entire network using this sample. Reducing the number of nodes we use will drastically improve the visibility of the graph. Additionally we will adjust the size of nodes, remove node labels, color nodes based on party affiliation, and adjust the size of edges based on its weight to further enhance readability.
 
 We then tried creating subgraphs, having filtered the nodes by certain attributes: party and region, as shown below.
+
+
 
 ```{r, eval = FALSE}
 # nodes filtered by attributes (party and region)
@@ -72,9 +84,13 @@ sub_g <- induced_subgraph(g1, vids = sub_nodes)
 plot(sub_g)
 ```
 
+
+
 We have the same issue as the our first plot, where it is impossible to read. To address this we will use the same method.
 
 # Graph/Subgraph Metrics and Hypothesis Testing
+
+
 
 ```{r}
 cnet_subgraph_dem <- cnet_igraph %>%
@@ -178,7 +194,7 @@ graph_metrics %>%
   kable()
 ```
 
-```{r, cache = TRUE}
+```{r}
 # bootstrap t-test to compare statistic of a subgraph to the overall graph
 bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lower", "two-tailed")) {
   if (!is.character(statistic)) {
@@ -252,7 +268,11 @@ bootstrap.test.results %>%
   kable()
 ```
 
+
+
 # Adjacency Matrices
+
+
 
 ```{r, cache = TRUE}
 cnet_adj <- as_adjacency_matrix(cnet_igraph)
@@ -328,3 +348,4 @@ cnet_adj_region %>%
     ylab = NULL
   )
 ```
+

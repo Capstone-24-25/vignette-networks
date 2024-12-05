@@ -2,7 +2,7 @@ library(tidyverse)
 library(igraph)
 
 # bootstrap t-test to compare statistic of a subgraph to the overall graph
-bootstrap.t.test <- function(graph, subgraph, statistic, n) {
+bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lower", "two-tailed")) {
   if (!is.character(statistic)) {
     warning("statistic must be a string")
   }
@@ -34,8 +34,16 @@ bootstrap.t.test <- function(graph, subgraph, statistic, n) {
   
   
   # calculate p-value
-  pval <- sum(stat.dist >= dist.mean + abs(test.stat - dist.mean))/n + 
-    sum(abs(stat.dist <= dist.mean - abs(test.stat - dist.mean)))/n
+  if (type == "upper") {
+    pval <- sum(stat.dist >= test.stat)/n
+  }
+  else if (type == "lower") {
+    pval <- sum(stat.dist <= test.stat)/n
+  }
+  else if (type == "two-tailed") {
+    pval <- sum(stat.dist >= dist.mean + abs(test.stat - dist.mean))/n + 
+      sum(abs(stat.dist <= dist.mean - abs(test.stat - dist.mean)))/n
+  }
   
   stat.dist.center <- stat.dist - dist.mean
   test.stat.center <- test.stat - dist.mean
@@ -54,8 +62,6 @@ source("scripts/preprocessing.R")
 cnet.igraph <- fromJSON(file = "data/congress_network/congress_network_data.json") %>%
   cnet_json_to_df() %>%
   create_cnet_igraph()
-
-
 
 cnet.subgraph.dem <- cnet.igraph %>%
   subgraph(
