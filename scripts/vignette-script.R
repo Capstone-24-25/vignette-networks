@@ -1,23 +1,5 @@
----
-title: "Network Analysis Vignette"
-author: "Ivy Li, Yamileth Martinez, Jade O'Brien"
-date: today
-format: html
----
+##### Load packages and read in the data #####
 
-# Overview
-
-In this vignette, we will explore basic network analysis using the `igraph` package on the `congress_network` dataset. Network analysis helps us explore and understand the structure of a network; in this case, the Twitter interactions of the 117th Congress. Our objective in this vignette is to give a basic overview of how to use the `igraph` package for data visualization, and to analyze whether particular attributes such as party affiliation, chamber, and the geographical region of a member of Congress influences who they interact with on Twitter. We will additionally cover centrality metrics, graph metrics, bootstrap hypothesis testing, and adjacency matrices.
-
-# Data
-
-The `congress_network_data.json` file is a network that represents the Twitter interaction network for the 117th United States Congress, taking into account the House of Representatives as well as the Senate. The `congress_node_attributes` file contains vertex attributes that include the name of the congressperson, their respective chamber, party affiliation, state, and Census Bureau-designated region of the state. The `congress_network_data.json` files can be downloaded [here](https://snap.stanford.edu/data/congress-twitter.html) from Stanford's SNAP website. The data in the `congress_node_attributes` file was collected independently.
-
-# Methodology
-
-We perform our analysis in R using the `rjson` and `igraph` packages. We read in the data from the `rjson` file using our preprocessing script, as shown below. To read in the data from a `json` file, we transformed the data into a dataframe.
-
-```{r}
 source(here::here("scripts/preprocessing.R"))
 library(tidyverse)
 library(rjson)
@@ -34,47 +16,17 @@ network_df <- cnet_json_to_df(network_json)
 # Create congress twitter graph
 cnet_igraph <- create_cnet_igraph(network_df)
 
-```
 
-# Important Terms and Information
-
-When dealing with network data observations are typically referred to as *nodes* or *vertices*, and the connections between them are called *edges*.
-
-*Node attributes* are the properties of individual observations, like someone's age. Whereas *edge attributes* are information about the relationships between nodes, such as the type of relationship or its strength. 
-
-Additionally, network data can be directed or undirected. In a directed network, edges originate from a particular node (known as the *source*) and terminate in another (known as the *target*). In contrast  no such directionality exists for undirected networks. For example, if we had data on a network of people in a gift exchange, this could be represented as a directed network where edges originate from the person giving a gift and terminate at the person receiving that particular gift.
-
-The data that we will be analyzing in this vignette is a weighted, directed network. This means that our edges have direction, and that there is a single edge attribute, known as the weight. The edge weights in this data are referred to as transmission weights and they essentially represent the probability that the source retweets, quote tweets, replies to, or mentions the target after the target tweets. 
-
-
-# Data Visualization
-
-The main package in R used for making network visualizations is `igraph`. After converting the `rjson` file to a dataframe and taking into account the `congress_node_attributes` file, we can use the package `igraph` for making our network visualization. This package allows us to visualize the entire network as well as different different subgroups. We aim to improve both graphs using random sampling. Below we shall try to create a visualization of the entire network.
-
-
-```{r}
+##### Data Visualization #####
 plot(cnet_igraph)
-```
 
-
-As we can see, the plot is impossible to read, there are too many nodes, and we did not specify what attribute should be used as the vertex labels.
-
-We then tried creating subgraphs, having filtered the nodes by certain attributes: party and region, as shown below.
-
-```{r, eval = FALSE}
 # nodes filtered by attributes (party and region)
 sub_nodes <- V(g1)[Party %in% c("D", "R") | Region %in% c("Midwest", "South")]
 
 sub_g <- induced_subgraph(g1, vids = sub_nodes)
 
 plot(sub_g)
-```
 
-We have the same issue as the our first plot, where it is impossible to read. To address this we will use the same method.
-
-Below, you can see that we have taken a random sample of people, having taken these people from our attributes data frame. We then matched these people to their connections in the network data frame and plotted this random sample. We can further reduce the noise by filtering the data based on certain attributes, which although it is not depicted below, can be done.
-
-```{r}
 # sample from node attributes, then name in sample 
 set.seed(123)
 sample_indices <- sample(nrow(cnet_node_attributes), size = 25)
@@ -120,18 +72,9 @@ plot(g2,
      vertex.frame.color = "black",
      vertex.label.color = "white",
      layout = layout_with_fr)  
-```
-# Centrality Metrics
 
-Centrality metrics are node specific measures that aim to quantify the importance of a node in a network. While there there are many different centrality metrics, we will focus on the following:
+##### Centrality and Graph Metrics #####
 
-- Degree: The number of edges that a particular node has
-- Betweenness: How frequently a particular node lies along the shortest path between any two other nodes
-- Closeness: Inverse of the sum of the shortest path length between that node and every other node in the network
-
-The below code chunk shows how we can calculate these centrality metrics for our network data.
-
-```{r}
 degree_metric <- tibble(degree = degree(cnet_igraph, mode = "all"), node = 1:length(degree(cnet_igraph, mode = "all")))
 closeness_metric <- tibble(closeness = closeness(cnet_igraph, mode = "all"), node = 1:length(closeness(cnet_igraph, mode = "all")))
 betweenness_metric <- tibble(betweenness = betweenness(cnet_igraph), node = 1:length(betweenness(cnet_igraph)))
@@ -144,11 +87,7 @@ closeness_metric %>%
 
 betweenness_metric %>%
   head()
-```
 
-Next we want to find what nodes in our network are the most central based off of these metrics. The code below creates tables with the top five nodes based off of each metric.
-
-```{r}
 highest_5_degree <- tibble(degree = degree(cnet_igraph, mode = "all"), node = 1:length(degree(cnet_igraph))) |>
   arrange(-degree) |>
   slice(1:5)
@@ -189,22 +128,9 @@ cnet_node_attributes |>
   arrange(-betweenness) |>
   kableExtra::kable() |>
   kableExtra::kable_styling(bootstrap_options = "striped", full_width = F)
-```
 
-As we can see from the above tables, Kevin McCarthy is present in all five of the tables, which implies that he is highly central to the network. 
+## Creating Subgraphs ##
 
-# Graph/Subgraph Metrics
-
-Graph and subgraphs metrics are used to measure qualities of the network as a whole rather than looking at each individual node as we did with centrality networks. The metrics we will be looking at are:
-
-- Transitivity: The probability that if some node A – node B, and node B – node C, then node A – node C
-- Edge Density: Ratio of actual number of edges to total possible edges
-- Mean Distance: Mean of the smallest distance between two nodes
-- Reciprocity: In a *directed* network, the probability that if node A – node B, then node B – node A
-
-First we are going to create a few important subgraphs including the Democratic and Republican subgraphs, the House and Senate subgraphs, and the subgraphs for each region.
-
-```{r}
 cnet_subgraph_dem <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -280,10 +206,9 @@ cnet_subgraph_northeast <- cnet_igraph %>%
       `==`("Northeast") %>%
       replace_na(FALSE)
   )
-```
 
-Next we will calculate the metrics for each of the subgraphs and the overall graph and use the kable package to display the results.
-```{r}
+## Subgraph Metrics ##
+
 graphs <- paste(rep("cnet_subgraph", 8), 
                 c("dem", "rep", "house", "senate", "midwest", "west", "south", "northeast"),
                 sep = "_")
@@ -291,12 +216,12 @@ graphs <- paste(rep("cnet_subgraph", 8),
 metrics <- c("reciprocity", "transitivity", "edge_density", "mean_distance")
 
 graph_metrics <- lapply(c("cnet_igraph", graphs), 
-       function(graph) {
-         lapply(metrics,
-                function(metric) {
-                  get(metric, mode = "function")(get(graph))
-                })
-})
+                        function(graph) {
+                          lapply(metrics,
+                                 function(metric) {
+                                   get(metric, mode = "function")(get(graph))
+                                 })
+                        })
 
 graph_metrics %>% 
   unlist() %>%
@@ -307,13 +232,9 @@ graph_metrics %>%
   `colnames<-`(metrics) %>%
   `rownames<-`(c("overall", c("dem", "rep", "house", "senate", "midwest", "west", "south", "northeast"))) %>%
   kable()
-```
 
-In the table above, we can see that all of the subgraphs have a much higher edge density than the overall graph. This makes sense as the sugraphs only contain observations that share a certain attribute in common, and we would generally expect that people on twitter interact more often with people they are similar with. However, this does bring up the question: How can we tell if these differences are statistically significant?
+##### Bootstrap Hypothesis Testing #####
 
-
-# Bootstrap Hypothesis Testing
-```{r, cache = TRUE}
 # bootstrap t-test to compare statistic of a subgraph to the overall graph
 bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lower", "two-tailed")) {
   
@@ -375,22 +296,20 @@ bootstrap.test.results <- matrix(
 )
 
 if(FALSE) {
-for (i in 1:length(graphs)) {
-  for (j in 1:length(metrics)) {
-    bootstrap.test.results[i,j] <- bootstrap.t.test(cnet_igraph, get(graphs[i]), metrics[j], 10000, "lower")$pval
+  for (i in 1:length(graphs)) {
+    for (j in 1:length(metrics)) {
+      bootstrap.test.results[i,j] <- bootstrap.t.test(cnet_igraph, get(graphs[i]), metrics[j], 10000, "lower")$pval
+    }
   }
-}
 }
 
 load(file = "data/bootstrap-test-results.RData")
 
 bootstrap.test.results %>%
   kable()
-```
 
-# Adjacency Matrices
 
-```{r, cache = TRUE}
+##### adjacency matrix #####
 cnet_adj <- as_adjacency_matrix(cnet_igraph)
 
 reorder_cnet_adj <- function(adj_mat, attribute) {
@@ -463,4 +382,3 @@ cnet_adj_region %>%
     xlab = NULL,
     ylab = NULL
   )
-```
