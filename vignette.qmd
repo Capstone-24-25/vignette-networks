@@ -11,7 +11,7 @@ In this vignette, we will explore basic network analysis using the `igraph` pack
 
 # Data
 
-The `congress_network_data.json` file is a network that represents the Twitter interaction network for the 117th United States Congress, taking into account the House of Representatives as well as the Senate. The `congress_node_attributes` file contains vertex attributes that include the name of the congressperson, their respective chamber, party affiliation, state, and Census Bureau-designated region of the state.
+The `congress_network_data.json` file is a network that represents the Twitter interaction network for the 117th United States Congress, taking into account the House of Representatives as well as the Senate. The `congress_node_attributes` file contains vertex attributes that include the name of the congressperson, their respective chamber, party affiliation, state, and Census Bureau-designated region of the state. The `congress_network_data.json` files can be downloaded [here](https://snap.stanford.edu/data/congress-twitter.html) from Stanford's SNAP website. The data in the `congress_node_attributes` file was collected independently.
 
 # Methodology
 
@@ -58,8 +58,6 @@ plot(cnet_igraph)
 
 
 As we can see, the plot is impossible to read, there are too many nodes, and we did not specify what attribute should be used as the vertex labels.
-
-To fix this, we are going to randomly sample 50 observations from our data and create a subgraph of the entire network using this sample. Reducing the number of nodes we use will drastically improve the visibility of the graph. Additionally we will adjust the size of nodes, remove node labels, color nodes based on party affiliation, and adjust the size of edges based on its weight to further enhance readability.
 
 We then tried creating subgraphs, having filtered the nodes by certain attributes: party and region, as shown below.
 
@@ -123,8 +121,88 @@ plot(g2,
      vertex.label.color = "white",
      layout = layout_with_fr)  
 ```
+# Centrality Metrics
 
-# Graph/Subgraph Metrics and Hypothesis Testing
+Centrality metrics are node specific measures that aim to quantify the importance of a node in a network. While there there are many different centrality metrics, we will focus on the following:
+
+- Degree: The number of edges that a particular node has
+- Betweenness: How frequently a particular node lies along the shortest path between any two other nodes
+- Closeness: Inverse of the sum of the shortest path length between that node and every other node in the network
+
+The below code chunk shows how we can calculate these centrality metrics for our network data.
+
+```{r}
+degree_metric <- tibble(degree = degree(cnet_igraph, mode = "all"), node = 1:length(degree(cnet_igraph, mode = "all")))
+closeness_metric <- tibble(closeness = closeness(cnet_igraph, mode = "all"), node = 1:length(closeness(cnet_igraph, mode = "all")))
+betweenness_metric <- tibble(betweenness = betweenness(cnet_igraph), node = 1:length(betweenness(cnet_igraph)))
+
+degree_metric %>%
+  head()
+
+closeness_metric %>%
+  head()
+
+betweenness_metric %>%
+  head()
+```
+
+Next we want to find what nodes in our network are the most central based off of these metrics. The code below creates tables with the top five nodes based off of each metric.
+
+```{r}
+highest_5_degree <- tibble(degree = degree(cnet_igraph, mode = "all"), node = 1:length(degree(cnet_igraph))) |>
+  arrange(-degree) |>
+  slice(1:5)
+
+
+cnet_node_attributes |>
+  filter(cnet_node_attributes$node %in% highest_5_degree$node) |>
+  select(node, congressperson) |>
+  inner_join(highest_5_degree) |>
+  select(-node) |>
+  arrange(-degree) |>
+  kableExtra::kable() |>
+  kableExtra::kable_styling(bootstrap_options = "striped", full_width = F)
+
+highest_5_closeness <- tibble(closeness = closeness(cnet_igraph, mode = "all"), node = 1:length(closeness(cnet_igraph, mode = "all"))) |>
+  arrange(-closeness) |>
+  slice(1:5)
+
+cnet_node_attributes |>
+  filter(cnet_node_attributes$node %in% highest_5_closeness$node) |>
+  select(node, congressperson) |>
+  inner_join(highest_5_closeness) |>
+  select(-node) |>
+  arrange(-closeness) |>
+  kableExtra::kable() |>
+  kableExtra::kable_styling(bootstrap_options = "striped", full_width = F)
+
+
+highest_5_betweenness <- tibble(betweenness = betweenness(cnet_igraph), node = 1:length(betweenness(cnet_igraph))) |>
+  arrange(-betweenness) |>
+  slice(1:5)
+
+cnet_node_attributes |>
+  filter(cnet_node_attributes$node %in% highest_5_betweenness$node) |>
+  select(node, congressperson) |>
+  inner_join(highest_5_betweenness) |>
+  select(-node) |>
+  arrange(-betweenness) |>
+  kableExtra::kable() |>
+  kableExtra::kable_styling(bootstrap_options = "striped", full_width = F)
+```
+
+As we can see from the above tables, Kevin McCarthy is present in all five of the tables, which implies that he is highly central to the network. 
+
+# Graph/Subgraph Metrics
+
+Graph and subgraphs metrics are used to measure qualities of the network as a whole rather than looking at each individual node as we did with centrality networks. The metrics we will be looking at are:
+
+- Transitivity: The probability that if some node A – node B, and node B – node C, then node A – node C
+- Edge Density: Ratio of actual number of edges to total possible edges
+- Mean Distance: Mean of the smallest distance between two nodes
+- Reciprocity: In a *directed* network, the probability that if node A – node B, then node B – node A
+
+First we are going to create a few important subgraphs including the Democratic and Republican subgraphs, the House and Senate subgraphs, and the subgraphs for each region.
 
 ```{r}
 cnet_subgraph_dem <- cnet_igraph %>%
@@ -202,7 +280,10 @@ cnet_subgraph_northeast <- cnet_igraph %>%
       `==`("Northeast") %>%
       replace_na(FALSE)
   )
+```
 
+Next we will calculate the metrics for each of the subgraphs and the overall graph and use the kable package to display the results.
+```{r}
 graphs <- paste(rep("cnet_subgraph", 8), 
                 c("dem", "rep", "house", "senate", "midwest", "west", "south", "northeast"),
                 sep = "_")
@@ -228,6 +309,10 @@ graph_metrics %>%
   kable()
 ```
 
+In the table above, we can see that all of the subgraphs have a much higher edge density than the overall graph. This makes sense as the sugraphs only contain observations that share a certain attribute in common, and we would generally expect that people on twitter interact more often with people they are similar with. However, this does bring up the question: How can we tell if these differences are statistically significant?
+
+
+# Bootstrap Hypothesis Testing
 ```{r, cache = TRUE}
 # bootstrap t-test to compare statistic of a subgraph to the overall graph
 bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lower", "two-tailed")) {
