@@ -16,13 +16,13 @@ In this vignette, we will explore basic network analysis using the `igraph` pack
 
 Repository Contents:
 
-The vignette itself can be found in the main directory in a file titled vignette.html. 
+- The vignette itself can be found in the main directory in a file titled vignette.html. 
 
-The img folder contains all of the adjacency matrix images created in the vignette.
+- The img folder contains all of the adjacency matrix images created in the vignette.
 
-The scripts folder contains a script titled vignette-script.R which contains all of the code used in the vignette, a preprocessing.R script used for preprocessing, as well as an archived folder consisting of archived scripts. 
+- The scripts folder contains a script titled vignette-script.R which contains all of the code used in the vignette, a preprocessing.R script used for preprocessing, as well as an archived folder consisting of archived scripts. 
 
-The data folder contains an RData file of the results of boostrap hypothesis testing, a csv file of node attributes, and a folder called `congress_network` which contains all of the resources and data downloaded [here](https://snap.stanford.edu/data/congress-twitter.html) from Stanford's SNAP website.
+- The data folder contains an RData file of the results of boostrap hypothesis testing, a csv file of node attributes, and a folder called `congress_network` which contains all of the resources and data downloaded [here](https://snap.stanford.edu/data/congress-twitter.html) from Stanford's SNAP website.
 
 <br />
 
