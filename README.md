@@ -11,7 +11,7 @@ Contributors:
 Abstract: 
 
 In this vignette, we will explore basic network analysis using the `igraph` package on the `congress_network` dataset. Network analysis helps us explore and understand the structure of a network; in this case, the Twitter interactions of the 117th Congress. Our objective in this vignette is to give a basic overview of how to use the `igraph` package for data visualization, and to analyze whether particular attributes such as party affiliation, chamber, and the geographical region of a member of Congress influences who they interact with on Twitter. We will additionally cover centrality metrics, graph metrics, bootstrap hypothesis testing, and adjacency matrices.
-
+<br />
 Repository Contents:
 
 The vignette itself can be found in the main directory in a file titled vignette.html. 
@@ -22,6 +22,7 @@ The scripts folder contains a script titled vignette-script.R which contains all
 
 The data folder contains an RData file of the results of boostrap hypothesis testing, a csv file of node attributes, and a folder called `congress_network` which contains all of the resources and data downloaded [here](https://snap.stanford.edu/data/congress-twitter.html) from Stanford's SNAP website.
 
+<br />
 
 References: 
 - [Paper corresponding to dataset](https://pmc.ncbi.nlm.nih.gov/articles/PMC10493874/#sec0003)
