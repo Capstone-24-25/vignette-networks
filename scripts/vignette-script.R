@@ -19,6 +19,7 @@ cnet_igraph <- create_cnet_igraph(network_df)
 
 ### DATA VISUALIZATION ###
 
+<<<<<<< HEAD
 ## Plot 1 ##
 
 # color nodes based on party membership
@@ -80,6 +81,7 @@ cnet_node_attributes <- read_csv("data/congress_node_attributes.csv",
 set.seed(123)
 sample_nodes <- sample(length(cnet_igraph), size = 25)
 
+<<<<<<< HEAD
 # create subgraph using sampled nodes
 g2 <- subgraph(cnet_igraph, sample_nodes)
 =======
@@ -555,6 +557,7 @@ cnet_adj_region %>%
     col.regions = c("black"),
     sub = NULL,
     xlab = NULL,
+<<<<<<< HEAD
     ylab = NULL,
     main = "Adjacency Matrix Ordered by Region"
   )
@@ -576,6 +579,7 @@ community_walktrap <- cluster_walktrap(g2_filtered)
 # assign colors to the communities
 V(g2_filtered)$color <- factor(community_walktrap$membership)
 
+<<<<<<< HEAD
 # plot results
 =======
 >>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
@@ -598,6 +602,7 @@ total_edges <- ecount(g2)
 set.seed(123)
 sample_size <- min(100, total_edges)
 
+<<<<<<< HEAD
 # sample edges
 sampled_edges <- sample(E(g2), size = sample_size)
 =======
@@ -607,6 +612,7 @@ sampled_edges <- sample(E(g2), size = sample_size)  # Sample edges
 # new graph with the sampled edges
 g2_sampled <- subgraph.edges(g2, sampled_edges)
 
+<<<<<<< HEAD
 # walktrap community detection on the sampled graph
 community_walktrap <- cluster_walktrap(g2_sampled)
 
@@ -640,6 +646,7 @@ sampled_nodes <- sample(V(g2), size = 25)
 # subgraph containing only the sampled nodes
 g2_sampled_nodes <- induced_subgraph(g2, vids = sampled_nodes)
 
+<<<<<<< HEAD
 # perform walktrap community detection on the sampled graph
 community_walktrap <- cluster_walktrap(g2_sampled_nodes)
 
@@ -666,6 +673,7 @@ plot(g2_sampled_nodes,
      layout = layout_with_fr,
      main = "Community Detection (Sampled Nodes with Walktrap)")
 
+<<<<<<< HEAD
 =======
 
 >>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
@@ -673,6 +681,7 @@ plot(g2_sampled_nodes,
 low_degree_nodes <- V(g2)[degree(g2) < 3]
 g2_pruned <- delete_edges(g2, E(g2)[.from(low_degree_nodes) | .to(low_degree_nodes)])
 
+<<<<<<< HEAD
 # walktrap community detection on the pruned graph
 community_walktrap <- cluster_walktrap(g2_pruned)
 
