@@ -513,6 +513,8 @@ We can now draw conclusions for our hypothesis tests with these corrected $p$-va
 
 # Adjacency Matrices
 
+Another way we can encode the information in a network is in a matrix. For a given graph with $N$ nodes, the adjacency matrix of the graph is a $N\times N$ matrix with entries $A_{ij}\in\{0,1\}$ where $A_{ij}=1$ if there is an edge going from node $i$ to node $j$. Visualizing these matrices can give greater insight into the structure of a network, especially when the nodes are ordered based on particular attributes. In the following section, we will convert the `cnet_igraph` into an adjacency matrix and reorder it based on particular node attributes.
+
 ```{r, cache = TRUE}
 # convert igraph object into an adjacency matrix
 cnet_adj <- as_adjacency_matrix(cnet_igraph)
@@ -560,6 +562,8 @@ cnet_adj_state <- reorder_cnet_adj(cnet_adj, "state")
 cnet_adj_region <- reorder_cnet_adj(cnet_adj, "region")
 ```
 
+Now, we can visualize our reordered adjacency matrices using the `image()` function.
+
 ```{r}
 cnet_adj_chamber %>%
   Matrix() %>%
@@ -570,7 +574,11 @@ cnet_adj_chamber %>%
     ylab = NULL,
     main = "Adjacency Matrix Ordered by Chamber"
   )
+```
 
+When the adjacency matrix of the Congress Twitter network is organized by the `chamber` attribute, we see two distinct regions of higher edge densities. These correspond to the House of Representatives (the larger square) and the Senate (the smaller square). The adjacency matrix ordered by `chamber` shows that members tend to interact more with other members in the same chamber, which agrees with our findings from the subgraph metrics and hypothesis testing.
+
+```{r}
 cnet_adj_party %>%
   Matrix() %>%
   image(
@@ -580,7 +588,11 @@ cnet_adj_party %>%
     ylab = NULL,
     main = "Adjacency Matrix Ordered by Party"
   )
+```
 
+When the adjacency matrix of the Congress Twitter network is organized by the `party` attribute, we again can see two distinct regions of higher edge densities. This time, these correspond to the Democratic and Republican parties, and again demonstrate that members tend to interact with other members from the same party, as opposed to those across the aisle.
+
+```{r}
 cnet_adj_state %>%
   Matrix() %>%
   image(
@@ -590,7 +602,11 @@ cnet_adj_state %>%
     ylab = NULL,
     main = "Adjacency Matrix Ordered by State"
   )
+```
 
+When we organize the adjacency matrix by the `state` attribute, we see a dark diagonal feature stretching across our adjacency matrix. This feature represents the interactions between congresspeople from the same state, and the higher edge density indicates that members of Congress also tend to interact with members from the same state than they do with members from other states.
+
+```{r}
 cnet_adj_region %>%
   Matrix() %>%
   image(
@@ -601,6 +617,8 @@ cnet_adj_region %>%
     main = "Adjacency Matrix Ordered by Region"
   )
 ```
+
+Finally, wehn we organize the adjacency matrix based on the region a member is from, we can make out four faint square-shaped regions of higher edge density. These squares represent interactions between members of the same regions, and just as with the other node attributes, we see that members tend to interact with those from the same region.
 
 # Community Detection
 
