@@ -30,6 +30,32 @@ plot(cnet_igraph,
      main = "Complete Network Graph")
 
 ## Plot 2 ##
+=======
+##### Data Visualization #####
+V(cnet_igraph)$color <- ifelse(V(cnet_igraph)$party == "D", "blue", 
+                               ifelse(V(cnet_igraph)$party == "R", "red", "gray"))
+plot(cnet_igraph,
+     main = "Complete Network Graph")
+
+
+# filter nodes by attributes (party or region)
+sub_nodes <- V(cnet_igraph)[party %in% c("D", "R") | region %in% c("Midwest", "South")]
+
+sub_g <- induced_subgraph(cnet_igraph, vids = sub_nodes)
+
+# colors based on region
+V(sub_g)$color <- ifelse(V(sub_g)$region == "Midwest", "orange", 
+                         ifelse(V(sub_g)$region == "South", "purple", "gray"))
+
+plot(sub_g,
+     main = "Subgraph of Filtered Nodes (Region)")
+
+
+# sample from node attributes, then name in sample 
+# load in node attributes
+cnet_node_attributes <- read_csv("data/congress_node_attributes.csv",
+                                 show_col_types = FALSE)
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 
 # filter nodes by attributes (party or region)
 sub_nodes <- V(cnet_igraph)[party %in% c("D", "R") & region %in% c("Midwest", "South")]
@@ -56,6 +82,29 @@ sample_nodes <- sample(length(cnet_igraph), size = 25)
 
 # create subgraph using sampled nodes
 g2 <- subgraph(cnet_igraph, sample_nodes)
+=======
+# want to make sure the attributes and nodes match
+id_node <- sample_nodes$node
+id_from <- network_df$from
+id_to <- network_df$to
+net_sam <- data.frame(from = double(),
+                      to = integer(),
+                      weight = double())
+
+for (i in id_node){
+  if (i %in% id_to | i %in% id_from){
+    matches_from <- subset(network_df, from == i)
+    matches_to <- subset(network_df, to == i)
+    net_sam <- rbind(net_sam, matches_from, matches_to)
+  }
+}
+
+net_sam <- subset(net_sam, from %in% sample_nodes$node & to %in% sample_nodes$node)
+
+g2 <- graph_from_data_frame(net_sam,
+                            directed = TRUE,
+                            vertices = sample_nodes)
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 
 # colors based on party
 V(g2)$color <- ifelse(V(g2)$party == "D", "blue", 
@@ -511,6 +560,12 @@ cnet_adj_region %>%
   )
 
 ### COMMUNITY DETECTION ###
+=======
+    ylab = NULL
+  )
+
+##### Community Detection #####
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 
 # remove edges with weight below 0.003
 g2_filtered <- delete_edges(g2, E(g2)[weight < 0.003])
@@ -522,6 +577,8 @@ community_walktrap <- cluster_walktrap(g2_filtered)
 V(g2_filtered)$color <- factor(community_walktrap$membership)
 
 # plot results
+=======
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 plot(g2_filtered,
      edge.width = 2,
      edge.color = E(g2_filtered)$color,
@@ -543,6 +600,9 @@ sample_size <- min(100, total_edges)
 
 # sample edges
 sampled_edges <- sample(E(g2), size = sample_size)
+=======
+sampled_edges <- sample(E(g2), size = sample_size)  # Sample edges
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 
 # new graph with the sampled edges
 g2_sampled <- subgraph.edges(g2, sampled_edges)
@@ -554,6 +614,13 @@ community_walktrap <- cluster_walktrap(g2_sampled)
 V(g2_sampled)$color <- factor(community_walktrap$membership)
 
 # plot results
+=======
+# Walktrap community detection on the sampled graph
+community_walktrap <- cluster_walktrap(g2_sampled)
+
+V(g2_sampled)$color <- factor(community_walktrap$membership)
+
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 plot(g2_sampled,
      edge.width = 2,
      edge.color = E(g2_sampled)$color,
@@ -580,6 +647,13 @@ community_walktrap <- cluster_walktrap(g2_sampled_nodes)
 V(g2_sampled_nodes)$color <- factor(community_walktrap$membership)
 
 # plot results
+=======
+# perform Walktrap community detection on the sampled graph
+community_walktrap <- cluster_walktrap(g2_sampled_nodes)
+
+V(g2_sampled_nodes)$color <- factor(community_walktrap$membership)
+
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 plot(g2_sampled_nodes,
      edge.width = 2,
      edge.color = E(g2_sampled_nodes)$color,
@@ -592,6 +666,9 @@ plot(g2_sampled_nodes,
      layout = layout_with_fr,
      main = "Community Detection (Sampled Nodes with Walktrap)")
 
+=======
+
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 # remove edges between nodes with low degrees
 low_degree_nodes <- V(g2)[degree(g2) < 3]
 g2_pruned <- delete_edges(g2, E(g2)[.from(low_degree_nodes) | .to(low_degree_nodes)])
@@ -603,6 +680,13 @@ community_walktrap <- cluster_walktrap(g2_pruned)
 V(g2_pruned)$color <- factor(community_walktrap$membership)
 
 # plot results
+=======
+# Walktrap community detection on the pruned graph
+community_walktrap <- cluster_walktrap(g2_pruned)
+
+V(g2_pruned)$color <- factor(community_walktrap$membership)
+
+>>>>>>> 37cbb41ff2732be21c8b046bb87e6d79b2510e03
 plot(g2_pruned,
      edge.width = 2,
      edge.color = E(g2_pruned)$color,
