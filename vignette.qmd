@@ -187,7 +187,7 @@ betweenness_metric %>%
 
 Next we want to find what nodes in our network are the most central based off of these metrics. The code below creates tables with the top five nodes based off of each metric.
 
-```{r}
+```{r, message = FALSE}
 # get the nodes with the highest degree
 highest_5_degree <- tibble(degree = degree(cnet_igraph, mode = "all"), node = 1:length(degree(cnet_igraph))) |>
   arrange(-degree) |>
