@@ -528,3 +528,120 @@ cnet_adj_region %>%
     ylab = NULL
   )
 ```
+
+Community Detection
+
+Community detection involves identifying groups of vertices within a graph that are more densely connected to each other than to the rest of the network. Since our data represents a weighted, directed network, we will use the Walktrap algorithm, which is better suited for such networks compared to the Louvain method, which requires an undirected graph. This simulates random walks on the graph to detect communities.
+
+Below, we will explore four methods for reducing the complexity of our community detection graphs: filtering edges by weight, applying random sampling to the edges, sampling a subset of nodes, and pruning edges based on node degree.
+
+To avoid creating an overly dense graph, we will reduce its complexity by using a random sample from the data visualization portion. Additionally, we have filtered the edges based on their weights, removing connections that are less significant. Specifically, we excluded edges with weights below 0.003, as the median weight across all edges is 0.0025, which helps focus on the most meaningful connections in the network.
+
+```{r}
+# remove edges with weight below 0.003
+g2_filtered <- delete_edges(g2, E(g2)[weight < 0.003])
+
+# perform Walktrap community detection on the filtered graph
+community_walktrap <- cluster_walktrap(g2_filtered)
+
+# assign colors to the communities
+V(g2_filtered)$color <- factor(community_walktrap$membership)
+
+plot(g2_filtered,
+     edge.width = 2,
+     edge.color = E(g2_filtered)$color,
+     edge.curved = 0.2,
+     edge.arrow.size = 0.5,
+     vertex.color = V(g2_filtered)$color,
+     vertex.size = 30,
+     vertex.frame.color = "black",
+     vertex.label.color = "white",
+     layout = layout_with_fr,
+     main = "Community Detection (Filtered Graph with Walktrap)")
+```
+
+We can also apply random sampling to reduce the size and density of the graph, while preserving its underlying structure.
+
+```{r}
+# total number of edges
+total_edges <- ecount(g2)
+
+# sample from edges, ensuring the sample size doesn't exceed the number of edges
+set.seed(123)
+sample_size <- min(100, total_edges)
+
+sampled_edges <- sample(E(g2), size = sample_size)  # Sample edges
+
+# new graph with the sampled edges
+g2_sampled <- subgraph.edges(g2, sampled_edges)
+
+# Walktrap community detection on the sampled graph
+community_walktrap <- cluster_walktrap(g2_sampled)
+
+V(g2_sampled)$color <- factor(community_walktrap$membership)
+
+plot(g2_sampled,
+     edge.width = 2,
+     edge.color = E(g2_sampled)$color,
+     edge.curved = 0.2,
+     edge.arrow.size = 0.5,
+     vertex.color = V(g2_sampled)$color,
+     vertex.size = 30,
+     vertex.frame.color = "black",
+     vertex.label.color = "white",
+     layout = layout_with_fr,
+     main = "Community Detection (Sampled Graph with Walktrap)")
+```
+
+We can also sample a subset of nodes, which simplifies the analysis by focusing on specific nodes.
+
+```{r}
+# sample 25 nodes from the graph
+set.seed(123)
+sampled_nodes <- sample(V(g2), size = 25)
+
+# subgraph containing only the sampled nodes
+g2_sampled_nodes <- induced_subgraph(g2, vids = sampled_nodes)
+
+# perform Walktrap community detection on the sampled graph
+community_walktrap <- cluster_walktrap(g2_sampled_nodes)
+
+V(g2_sampled_nodes)$color <- factor(community_walktrap$membership)
+
+plot(g2_sampled_nodes,
+     edge.width = 2,
+     edge.color = E(g2_sampled_nodes)$color,
+     edge.curved = 0.2,
+     edge.arrow.size = 0.5,
+     vertex.color = V(g2_sampled_nodes)$color,
+     vertex.size = 30,
+     vertex.frame.color = "black",
+     vertex.label.color = "white",
+     layout = layout_with_fr,
+     main = "Community Detection (Sampled Nodes with Walktrap)")
+```
+
+We can also remove edges between nodes with low degrees, under the assumption that highly connected nodes play a more significant role in community detection.
+
+```{r}
+# remove edges between nodes with low degrees
+low_degree_nodes <- V(g2)[degree(g2) < 3]
+g2_pruned <- delete_edges(g2, E(g2)[.from(low_degree_nodes) | .to(low_degree_nodes)])
+
+# Walktrap community detection on the pruned graph
+community_walktrap <- cluster_walktrap(g2_pruned)
+
+V(g2_pruned)$color <- factor(community_walktrap$membership)
+
+plot(g2_pruned,
+     edge.width = 2,
+     edge.color = E(g2_pruned)$color,
+     edge.curved = 0.2,
+     edge.arrow.size = 0.5,
+     vertex.color = V(g2_pruned)$color,
+     vertex.size = 30,
+     vertex.frame.color = "black",
+     vertex.label.color = "white",
+     layout = layout_with_fr,
+     main = "Community Detection (Pruned Graph with Walktrap)")
+```
