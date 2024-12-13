@@ -53,8 +53,8 @@ The primary R package for creating network visualizations is igraph. By converti
 
 
 ```{r}
-V(cnet_igraph)$color <- ifelse(V(cnet_igraph)$Party == "D", "blue", 
-                      ifelse(V(cnet_igraph)$Party == "R", "red", "gray"))
+V(cnet_igraph)$color <- ifelse(V(cnet_igraph)$party == "D", "blue", 
+                      ifelse(V(cnet_igraph)$party == "R", "red", "gray"))
 plot(cnet_igraph,
      main = "Complete Network Graph")
 ```
@@ -63,15 +63,15 @@ As shown, the initial plot is cluttered and difficult to interpret due to the ex
 
 To address this, we created subgraphs by filtering the nodes based on specific attributes, such as region. In the subgraph below, we focused on the Midwest and South regions, with nodes in the Midwest colored orange, nodes in the South colored purple, and all other nodes colored gray. This allows us to clearly distinguish between these regions while maintaining the overall structure of the network.
 
-```{r, eval = FALSE}
+```{r}
 # filter nodes by attributes (party or region)
-sub_nodes <- V(cnet_igraph)[Party %in% c("D", "R") | Region %in% c("Midwest", "South")]
+sub_nodes <- V(cnet_igraph)[party %in% c("D", "R") | region %in% c("Midwest", "South")]
 
 sub_g <- induced_subgraph(cnet_igraph, vids = sub_nodes)
 
 # colors based on region
-V(sub_g)$color <- ifelse(V(sub_g)$Region == "Midwest", "orange", 
-                      ifelse(V(sub_g)$Region == "South", "purple", "gray"))
+V(sub_g)$color <- ifelse(V(sub_g)$region == "Midwest", "orange", 
+                      ifelse(V(sub_g)$region == "South", "purple", "gray"))
 
 plot(sub_g,
      main = "Subgraph of Filtered Nodes (Region)")
@@ -82,13 +82,17 @@ Similar to the first plot, this visualization also suffers from readability issu
 Below, we randomly sampled individuals from the attributes dataframe and matched them to their connections in the network dataframe to create a plot of this random sample. The node colors in the plot are determined by party affiliation, enhancing the visual distinction between groups. While not depicted here, additional noise reduction can be achieved by filtering the data based on specific attributes.
 
 ```{r}
+# load in node attributes
+cnet_node_attributes <- read_csv("data/congress_node_attributes.csv",
+                                 show_col_types = FALSE)
+
 # sample from node attributes, then name in sample 
 set.seed(123)
 sample_indices <- sample(nrow(cnet_node_attributes), size = 25)
 sample_nodes <- cnet_node_attributes[sample_indices,]
 
 # want to make sure the attributes and nodes match
-id_node <- sample_nodes$name
+id_node <- sample_nodes$node
 id_from <- network_df$from
 id_to <- network_df$to
 net_sam <- data.frame(from = double(),
@@ -103,15 +107,15 @@ for (i in id_node){
   }
 }
 
-net_sam <- subset(net_sam, from %in% sample_nodes$name & to %in% sample_nodes$name)
+net_sam <- subset(net_sam, from %in% sample_nodes$node & to %in% sample_nodes$node)
 
 g2 <- graph_from_data_frame(net_sam,
                             directed = TRUE,
                             vertices = sample_nodes)
 
 # colors based on party
-V(g2)$color <- ifelse(V(g2)$Party == "D", "blue", 
-                      ifelse(V(g2)$Party == "R", "red", "gray"))
+V(g2)$color <- ifelse(V(g2)$party == "D", "blue", 
+                      ifelse(V(g2)$party == "R", "red", "gray"))
 
 # color based on weight
 E(g2)$color <- ifelse(E(g2)$weight > .025, "darkred", "black")
@@ -137,13 +141,13 @@ To explore a subset of the network, we first filtered the nodes based on their r
 set.seed(123)
 
 # filter the nodes by region (Midwest and South)
-filtered_nodes <- cnet_node_attributes[cnet_node_attributes$Region %in% c("Midwest", "South"), ]
+filtered_nodes <- cnet_node_attributes[cnet_node_attributes$region %in% c("Midwest", "South"), ]
 
 # random sample from the filtered nodes
 sample_nodes <- filtered_nodes[sample(nrow(filtered_nodes), size = 25), ]
 
 # make sure attributes and nodes match
-id_node <- sample_nodes$name
+id_node <- sample_nodes$node
 id_from <- network_df$from
 id_to <- network_df$to
 net_sam <- data.frame(from = double(),
@@ -159,7 +163,7 @@ for (i in id_node) {
 }
 
 # only keep the sampled nodes
-net_sam <- subset(net_sam, from %in% sample_nodes$name & to %in% sample_nodes$name)
+net_sam <- subset(net_sam, from %in% sample_nodes$node & to %in% sample_nodes$node)
 
 # subgraph from the sampled nodes and filtered edges
 g2 <- graph_from_data_frame(net_sam,
@@ -167,8 +171,8 @@ g2 <- graph_from_data_frame(net_sam,
                             vertices = sample_nodes)
 
 # colors based on region
-V(g2)$color <- ifelse(V(g2)$Region == "Midwest", "orange", 
-                      ifelse(V(g2)$Region == "South", "purple", "gray"))
+V(g2)$color <- ifelse(V(g2)$region == "Midwest", "orange", 
+                      ifelse(V(g2)$region == "South", "purple", "gray"))
 
 # colors based on weight
 E(g2)$color <- ifelse(E(g2)$weight > 0.025, "darkred", "black")
@@ -346,7 +350,8 @@ cnet_subgraph_northeast <- cnet_igraph %>%
   )
 ```
 
-Next we will calculate the metrics for each of the subgraphs and the overall graph and use the kable package to display the results.
+Next we will calculate the metrics for each of the subgraphs and the overall graph and use the `kable` package to display the results.
+
 ```{r}
 graphs <- paste(rep("cnet_subgraph", 8), 
                 c("dem", "rep", "house", "senate", "midwest", "west", "south", "northeast"),
@@ -376,10 +381,15 @@ graph_metrics %>%
 In the table above, we can see that all of the subgraphs have a much higher edge density than the overall graph. This makes sense as the sugraphs only contain observations that share a certain attribute in common, and we would generally expect that people on twitter interact more often with people they are similar with. However, this does bring up the question: How can we tell if these differences are statistically significant?
 
 
-# Bootstrap Hypothesis Testing
+# Hypothesis Testing
+
+In order to formally test whether these differences are statistically significant, we will need to find a distribution that our test statistics (i.e., our subgraph metrics) can be compared to in order to obtain a $p$-value. One way to do this is to repeatedly randomly sample subgraphs of the same size from the overall graph and calculate the metric of interest on the randomly sampled subgraphs. We then can use these metrics as a null distribution of the metric of interest. To help us perform this procedure, we will define a function called `resample.t.test()` which will follow these steps to calculate a $p$-value given a specific graph, subgraph, statistic, and $n$, the number of random samples to perform. We then apply this function to the subgraphs and metrics that we looked at in the previous section.
+
 ```{r, cache = TRUE}
-# bootstrap t-test to compare statistic of a subgraph to the overall graph
-bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lower", "two-tailed")) {
+set.seed(12132024)
+
+# resampling t-test to compare statistic of a subgraph to the overall graph
+resample.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lower", "two-tailed")) {
   
   # get number of nodes in graph and subgraph
   n.graph <- graph %>% length()
@@ -419,9 +429,7 @@ bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "l
       sum(abs(stat.dist <= dist.mean - abs(test.stat - dist.mean)))/n
   }
   
-  stat.dist.center <- stat.dist - dist.mean
-  test.stat.center <- test.stat - dist.mean
-  
+
   out <- list(
     dist = stat.dist,
     stat = test.stat,
@@ -431,35 +439,89 @@ bootstrap.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "l
   return(out)
 }
 
-bootstrap.test.results <- matrix(
+# prepare matrix to store t-test results
+t.test.results <- matrix(
   data = rep(rep(0, length(groups)), length(metrics)),
   nrow = length(graphs), 
   ncol = length(metrics), 
   dimnames = (list(c("dem", "rep", "house", "senate", "midwest", "west", "south", "northeast"), metrics))
 )
 
-if(FALSE) {
+# perform t-tests on subgraph metrics
 for (i in 1:length(graphs)) {
   for (j in 1:length(metrics)) {
-    bootstrap.test.results[i,j] <- bootstrap.t.test(cnet_igraph, get(graphs[i]), metrics[j], 10000, "lower")$pval
+    t.test.results[i,j] <- resample.t.test(cnet_igraph, get(graphs[i]), metrics[j], 10000, "two-tailed")$pval
   }
 }
-}
+```
 
-load(file = "data/bootstrap-test-results.RData")
+The results of our hypothesis test are shown in the following table.
 
-bootstrap.test.results %>%
-  kable()
+```{r}
+# print results
+t.test.results %>%
+  kable(
+    caption = "Subgraph Metric p-values"
+  )
+
+```
+
+```{r}
+# apply benjamini-yekuteili correction and print results
+t.test.results %>%
+  as.data.frame() %>%
+  mutate(
+    subgraph = row.names(.),
+    .before = "reciprocity"
+  ) %>%
+  `row.names<-`(NULL) %>%
+  pivot_longer(
+    -subgraph,
+    names_to = "metric",
+    values_to = "p.value"
+  ) %>%
+  arrange(
+    p.value
+  ) %>%
+  mutate(
+    i = row_number()
+  ) %>%
+  group_by(i) %>%
+  mutate(
+    p.by = nrow(.)*sum(1/1:i)*p.value/i
+  ) %>%
+  ungroup() %>%
+  select(
+    -i,-p.value
+  ) %>%
+  pivot_wider(
+    names_from = metric,
+    values_from = p.by
+  ) %>%
+  relocate(
+    reciprocity,
+    transitivity,
+    .before = "edge_density"
+  ) %>%
+  kable(
+    caption = "Benjamini-Yekuteili Corrected Subgraph Metric p-values"
+  )
 ```
 
 # Adjacency Matrices
 
 ```{r, cache = TRUE}
+# convert igraph object into an adjacency matrix
 cnet_adj <- as_adjacency_matrix(cnet_igraph)
 
+# define helper function to reorder adjacency matrix based on particular node attributes
 reorder_cnet_adj <- function(adj_mat, attribute) {
-  node_attributes <- read_csv("data/congress_node_attributes.csv")
   
+  # load in node attributes
+  node_attributes <- read_csv("data/congress_node_attributes.csv",
+                              show_col_types = FALSE)
+  
+  # obtain new order by arranging based on attribute
   new_order <- node_attributes %>% 
     mutate(
       rand_order = sample(node)
@@ -477,6 +539,7 @@ reorder_cnet_adj <- function(adj_mat, attribute) {
       new_order
     )
   
+  # reorder adjancency matrix based on the new order
   new_adj_mat <- adj_mat
   for (i in 1:475) {
     for (j in 1:475) {
@@ -487,18 +550,22 @@ reorder_cnet_adj <- function(adj_mat, attribute) {
   return(new_adj_mat)
 }
 
+# generate adjacency matrices ordered by each set of node attributes
 cnet_adj_chamber <- reorder_cnet_adj(cnet_adj, "chamber")
 cnet_adj_party <- reorder_cnet_adj(cnet_adj, "party")
 cnet_adj_state <- reorder_cnet_adj(cnet_adj, "state")
 cnet_adj_region <- reorder_cnet_adj(cnet_adj, "region")
+```
 
+```{r}
 cnet_adj_chamber %>%
   Matrix() %>%
   image(
     col.regions = c("black"),
     sub = NULL,
     xlab = NULL,
-    ylab = NULL
+    ylab = NULL,
+    main = "Adjacency Matrix Ordered by Chamber"
   )
 
 cnet_adj_party %>%
@@ -507,7 +574,8 @@ cnet_adj_party %>%
     col.regions = c("black"),
     sub = NULL,
     xlab = NULL,
-    ylab = NULL
+    ylab = NULL,
+    main = "Adjacency Matrix Ordered by Party"
   )
 
 cnet_adj_state %>%
@@ -516,7 +584,8 @@ cnet_adj_state %>%
     col.regions = c("black"),
     sub = NULL,
     xlab = NULL,
-    ylab = NULL
+    ylab = NULL,
+    main = "Adjacency Matrix Ordered by State"
   )
 
 cnet_adj_region %>%
@@ -525,11 +594,12 @@ cnet_adj_region %>%
     col.regions = c("black"),
     sub = NULL,
     xlab = NULL,
-    ylab = NULL
+    ylab = NULL,
+    main = "Adjacency Matrix Ordered by Region"
   )
 ```
 
-Community Detection
+# Community Detection
 
 Community detection involves identifying groups of vertices within a graph that are more densely connected to each other than to the rest of the network. Since our data represents a weighted, directed network, we will use the Walktrap algorithm, which is better suited for such networks compared to the Louvain method, which requires an undirected graph. This simulates random walks on the graph to detect communities.
 
