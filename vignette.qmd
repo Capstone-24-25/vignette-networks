@@ -17,7 +17,7 @@ The `congress_network_data.json` file is a network that represents the Twitter i
 
 We perform our analysis in R using the `rjson` and `igraph` packages. We read in the data from the `rjson` file using our preprocessing script, as shown below. To read in the data from a `json` file, we transformed the data into a dataframe.
 
-```{r}
+```{r, message = FALSE}
 source(here::here("scripts/preprocessing.R"))
 library(tidyverse)
 library(rjson)
@@ -463,8 +463,9 @@ t.test.results %>%
   kable(
     caption = "Subgraph Metric p-values"
   )
-
 ```
+
+However, since we performed multiple hypothesis tests, we will need to correct our $p$-values to account for the fact that the individual Type I Error rates compound over multiple test. Here, we will use the Benjamini-Yekuteili correction.
 
 ```{r}
 # apply benjamini-yekuteili correction and print results
@@ -507,6 +508,8 @@ t.test.results %>%
     caption = "Benjamini-Yekuteili Corrected Subgraph Metric p-values"
   )
 ```
+
+We can now draw conclusions for our hypothesis tests with these corrected $p$-values. At the $\alpha=0.05$ significance level, we can conclude that the edge density of all subgraphs is different from the overall graph. Additionally, the transitivity of the Democratic, Republican, House, and Senate subgraphs are all different from the overall graph, and the mean distance of the Democratic and the Senate subgraphs are also different from the overall graph. The results for the edge density in particular indicate that these node attributes do play a significant factor in how members of Congress interact on Twitter: members have a greater tendency to interact with other members of the same party, chamber, state, and region.
 
 # Adjacency Matrices
 
