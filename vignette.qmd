@@ -49,30 +49,37 @@ The data that we will be analyzing in this vignette is a weighted, directed netw
 
 # Data Visualization
 
-The main package in R used for making network visualizations is `igraph`. After converting the `rjson` file to a dataframe and taking into account the `congress_node_attributes` file, we can use the package `igraph` for making our network visualization. This package allows us to visualize the entire network as well as different different subgroups. We aim to improve both graphs using random sampling. Below we shall try to create a visualization of the entire network.
+The primary R package for creating network visualizations is igraph. By converting the rjson file into a dataframe and incorporating the congress_node_attributes file, we can leverage the capabilities of igraph to generate detailed network visualizations. This package enables visualization of the entire network as well as its subgroups. Node colors in the visualizations are based on party affiliation, providing clear distinctions between groups. Our objective is to enhance these visualizations through random sampling techniques. Below, we attempt to create a visualization of the complete network.
 
 
 ```{r}
-plot(cnet_igraph)
+V(cnet_igraph)$color <- ifelse(V(cnet_igraph)$Party == "D", "blue", 
+                      ifelse(V(cnet_igraph)$Party == "R", "red", "gray"))
+plot(cnet_igraph,
+     main = "Complete Network Graph")
 ```
 
+As shown, the initial plot is cluttered and difficult to interpret due to the excessive number of nodes, and no specific attribute was assigned as vertex labels. Additionally, node colors are determined by party affiliation, highlighting group differences.
 
-As we can see, the plot is impossible to read, there are too many nodes, and we did not specify what attribute should be used as the vertex labels.
-
-We then tried creating subgraphs, having filtered the nodes by certain attributes: party and region, as shown below.
+To address this, we created subgraphs by filtering the nodes based on specific attributes, such as region. In the subgraph below, we focused on the Midwest and South regions, with nodes in the Midwest colored orange, nodes in the South colored purple, and all other nodes colored gray. This allows us to clearly distinguish between these regions while maintaining the overall structure of the network.
 
 ```{r, eval = FALSE}
-# nodes filtered by attributes (party and region)
-sub_nodes <- V(g1)[Party %in% c("D", "R") | Region %in% c("Midwest", "South")]
+# filter nodes by attributes (party or region)
+sub_nodes <- V(cnet_igraph)[Party %in% c("D", "R") | Region %in% c("Midwest", "South")]
 
-sub_g <- induced_subgraph(g1, vids = sub_nodes)
+sub_g <- induced_subgraph(cnet_igraph, vids = sub_nodes)
 
-plot(sub_g)
+# colors based on region
+V(sub_g)$color <- ifelse(V(sub_g)$Region == "Midwest", "orange", 
+                      ifelse(V(sub_g)$Region == "South", "purple", "gray"))
+
+plot(sub_g,
+     main = "Subgraph of Filtered Nodes (Region)")
 ```
 
-We have the same issue as the our first plot, where it is impossible to read. To address this we will use the same method.
+Similar to the first plot, this visualization also suffers from readability issues due to the dense network. To address this, we applied a similar approach to simplify the graph.
 
-Below, you can see that we have taken a random sample of people, having taken these people from our attributes data frame. We then matched these people to their connections in the network data frame and plotted this random sample. We can further reduce the noise by filtering the data based on certain attributes, which although it is not depicted below, can be done.
+Below, we randomly sampled individuals from the attributes dataframe and matched them to their connections in the network dataframe to create a plot of this random sample. The node colors in the plot are determined by party affiliation, enhancing the visual distinction between groups. While not depicted here, additional noise reduction can be achieved by filtering the data based on specific attributes.
 
 ```{r}
 # sample from node attributes, then name in sample 
@@ -119,7 +126,64 @@ plot(g2,
      vertex.size = 30,
      vertex.frame.color = "black",
      vertex.label.color = "white",
-     layout = layout_with_fr)  
+     layout = layout_with_fr,
+     main = "Subset of Nodes and Edges")
+```
+
+To explore a subset of the network, we first filtered the nodes based on their region (Midwest and South). After narrowing down the dataset to these two regions, we randomly selected n=25 nodes to analyze further. This sampling ensures that we focus on a manageable portion of the network while retaining the regional diversity we are interested in. We then extracted the corresponding edges that connect these sampled nodes and created a subgraph for visualization. In this plot, nodes are colored according to their region: Midwest nodes are colored orange and South nodes are colored purple. The edges are colored based on their weight, with higher-weighted connections shown in dark red. This approach allows us to examine the structure of a smaller, region-specific portion of the network.
+
+```{r}
+# sample from node attributes, then match to corresponding connections in the network
+set.seed(123)
+
+# filter the nodes by region (Midwest and South)
+filtered_nodes <- cnet_node_attributes[cnet_node_attributes$Region %in% c("Midwest", "South"), ]
+
+# random sample from the filtered nodes
+sample_nodes <- filtered_nodes[sample(nrow(filtered_nodes), size = 25), ]
+
+# make sure attributes and nodes match
+id_node <- sample_nodes$name
+id_from <- network_df$from
+id_to <- network_df$to
+net_sam <- data.frame(from = double(),
+                      to = integer(),
+                      weight = double())
+
+for (i in id_node) {
+  if (i %in% id_to | i %in% id_from) {
+    matches_from <- subset(network_df, from == i)
+    matches_to <- subset(network_df, to == i)
+    net_sam <- rbind(net_sam, matches_from, matches_to)
+  }
+}
+
+# only keep the sampled nodes
+net_sam <- subset(net_sam, from %in% sample_nodes$name & to %in% sample_nodes$name)
+
+# subgraph from the sampled nodes and filtered edges
+g2 <- graph_from_data_frame(net_sam,
+                            directed = TRUE,
+                            vertices = sample_nodes)
+
+# colors based on region
+V(g2)$color <- ifelse(V(g2)$Region == "Midwest", "orange", 
+                      ifelse(V(g2)$Region == "South", "purple", "gray"))
+
+# colors based on weight
+E(g2)$color <- ifelse(E(g2)$weight > 0.025, "darkred", "black")
+
+plot(g2,
+     edge.width = 2,
+     edge.color = E(g2)$color,
+     edge.curved = 0.2,
+     edge.arrow.size = 0.5,
+     vertex.color = V(g2)$color, 
+     vertex.size = 30,
+     vertex.frame.color = "black",
+     vertex.label.color = "white",
+     layout = layout_with_fr,
+     main = "Random Sample of 25 Nodes (Filtered by Midwest and South Regions)")
 ```
 # Centrality Metrics
 
