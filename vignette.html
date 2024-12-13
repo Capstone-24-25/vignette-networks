@@ -181,10 +181,13 @@ window.Quarto = {
 <h1>Data Visualization</h1>
 <p>The primary R package for creating network visualizations is igraph. By converting the rjson file into a dataframe and incorporating the congress_node_attributes file, we can leverage the capabilities of igraph to generate detailed network visualizations. This package enables visualization of the entire network as well as its subgroups. Node colors in the visualizations are based on party affiliation, providing clear distinctions between groups. Our objective is to enhance these visualizations through random sampling techniques. Below, we attempt to create a visualization of the complete network.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(cnet_igraph)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">V</span>(cnet_igraph)<span class="sc">$</span>party <span class="sc">==</span> <span class="st">"D"</span>, <span class="st">"blue"</span>, </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">ifelse</span>(<span class="fu">V</span>(cnet_igraph)<span class="sc">$</span>party <span class="sc">==</span> <span class="st">"R"</span>, <span class="st">"red"</span>, <span class="st">"gray"</span>))</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(cnet_igraph,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Complete Network Graph"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># color nodes based on party membership</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(cnet_igraph)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">V</span>(cnet_igraph)<span class="sc">$</span>party <span class="sc">==</span> <span class="st">"D"</span>, <span class="st">"blue"</span>, </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">ifelse</span>(<span class="fu">V</span>(cnet_igraph)<span class="sc">$</span>party <span class="sc">==</span> <span class="st">"R"</span>, <span class="st">"red"</span>, <span class="st">"gray"</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># plot congress network</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(cnet_igraph,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Complete Network Graph"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -194,19 +197,20 @@ window.Quarto = {
 </div>
 </div>
 <p>As shown, the initial plot is cluttered and difficult to interpret due to the excessive number of nodes, and no specific attribute was assigned as vertex labels. Additionally, node colors are determined by party affiliation, highlighting group differences.</p>
-<p>To address this, we created subgraphs by filtering the nodes based on specific attributes, such as region. In the subgraph below, we focused on the Midwest and South regions, with nodes in the Midwest colored orange, nodes in the South colored purple, and all other nodes colored gray. This allows us to clearly distinguish between these regions while maintaining the overall structure of the network.</p>
+<p>To address this, we created subgraphs by filtering the nodes based on specific attributes, such as region. In the subgraph below, we focused on the Midwest and South regions, with nodes in the Midwest colored orange and nodes in the South colored purple. This allows us to clearly distinguish between these regions while maintaining the overall structure of the network.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter nodes by attributes (party or region)</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>sub_nodes <span class="ot">&lt;-</span> <span class="fu">V</span>(cnet_igraph)[party <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"D"</span>, <span class="st">"R"</span>) <span class="sc">|</span> region <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Midwest"</span>, <span class="st">"South"</span>)]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>sub_nodes <span class="ot">&lt;-</span> <span class="fu">V</span>(cnet_igraph)[party <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"D"</span>, <span class="st">"R"</span>) <span class="sc">&amp;</span> region <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Midwest"</span>, <span class="st">"South"</span>)]</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>sub_g <span class="ot">&lt;-</span> <span class="fu">induced_subgraph</span>(cnet_igraph, <span class="at">vids =</span> sub_nodes)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># colors based on region</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(sub_g)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">V</span>(sub_g)<span class="sc">$</span>region <span class="sc">==</span> <span class="st">"Midwest"</span>, <span class="st">"orange"</span>, </span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">ifelse</span>(<span class="fu">V</span>(sub_g)<span class="sc">$</span>region <span class="sc">==</span> <span class="st">"South"</span>, <span class="st">"purple"</span>, <span class="st">"gray"</span>))</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># generate induced subgraph based on filtered nodes</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>sub_g <span class="ot">&lt;-</span> <span class="fu">induced_subgraph</span>(cnet_igraph, <span class="at">vids =</span> sub_nodes)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># color nodes based on region</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(sub_g)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">V</span>(sub_g)<span class="sc">$</span>region <span class="sc">==</span> <span class="st">"Midwest"</span>, <span class="st">"orange"</span>, <span class="st">"purple"</span>)</span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(sub_g,</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Subgraph of Filtered Nodes (Region)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># plot subgraph</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(sub_g,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Subgraph of Filtered Nodes (Region)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -215,59 +219,39 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>Similar to the first plot, this visualization also suffers from readability issues due to the dense network. To address this, we applied a similar approach to simplify the graph.</p>
-<p>Below, we randomly sampled individuals from the attributes dataframe and matched them to their connections in the network dataframe to create a plot of this random sample. The node colors in the plot are determined by party affiliation, enhancing the visual distinction between groups. While not depicted here, additional noise reduction can be achieved by filtering the data based on specific attributes.</p>
+<p>Similar to the first plot, this visualization also suffers from readability issues due to the dense network. To address, we will instead sample 25 nodes and obtain a subgraph containing just these nodes and the edges between them. The node colors in the plot are determined by party affiliation, enhancing the visual distinction between groups. While not depicted here, additional noise reduction can be achieved by filtering the data based on specific attributes.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load in node attributes</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>cnet_node_attributes <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/congress_node_attributes.csv"</span>,</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># sample from node attributes, then name in sample </span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># sample 25 nodes</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>sample_indices <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">nrow</span>(cnet_node_attributes), <span class="at">size =</span> <span class="dv">25</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>sample_nodes <span class="ot">&lt;-</span> cnet_node_attributes[sample_indices,]</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># want to make sure the attributes and nodes match</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>id_node <span class="ot">&lt;-</span> sample_nodes<span class="sc">$</span>node</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>id_from <span class="ot">&lt;-</span> network_df<span class="sc">$</span>from</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>id_to <span class="ot">&lt;-</span> network_df<span class="sc">$</span>to</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>net_sam <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">from =</span> <span class="fu">double</span>(),</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                      <span class="at">to =</span> <span class="fu">integer</span>(),</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                      <span class="at">weight =</span> <span class="fu">double</span>())</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> id_node){</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%in%</span> id_to <span class="sc">|</span> i <span class="sc">%in%</span> id_from){</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    matches_from <span class="ot">&lt;-</span> <span class="fu">subset</span>(network_df, from <span class="sc">==</span> i)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    matches_to <span class="ot">&lt;-</span> <span class="fu">subset</span>(network_df, to <span class="sc">==</span> i)</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    net_sam <span class="ot">&lt;-</span> <span class="fu">rbind</span>(net_sam, matches_from, matches_to)</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>net_sam <span class="ot">&lt;-</span> <span class="fu">subset</span>(net_sam, from <span class="sc">%in%</span> sample_nodes<span class="sc">$</span>node <span class="sc">&amp;</span> to <span class="sc">%in%</span> sample_nodes<span class="sc">$</span>node)</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">graph_from_data_frame</span>(net_sam,</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>                            <span class="at">directed =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>                            <span class="at">vertices =</span> sample_nodes)</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co"># colors based on party</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">V</span>(g2)<span class="sc">$</span>party <span class="sc">==</span> <span class="st">"D"</span>, <span class="st">"blue"</span>, </span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">ifelse</span>(<span class="fu">V</span>(g2)<span class="sc">$</span>party <span class="sc">==</span> <span class="st">"R"</span>, <span class="st">"red"</span>, <span class="st">"gray"</span>))</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co"># color based on weight</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="fu">E</span>(g2)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">E</span>(g2)<span class="sc">$</span>weight <span class="sc">&gt;</span> .<span class="dv">025</span>, <span class="st">"darkred"</span>, <span class="st">"black"</span>)</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2,</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2)<span class="sc">$</span>color,</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="st">"black"</span>,</span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2)<span class="sc">$</span>color, </span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Subset of Nodes and Edges"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>sample_nodes <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">length</span>(cnet_igraph), <span class="at">size =</span> <span class="dv">25</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph using sampled nodes</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">subgraph</span>(cnet_igraph, sample_nodes)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># colors based on party</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">V</span>(g2)<span class="sc">$</span>party <span class="sc">==</span> <span class="st">"D"</span>, <span class="st">"blue"</span>, </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">ifelse</span>(<span class="fu">V</span>(g2)<span class="sc">$</span>party <span class="sc">==</span> <span class="st">"R"</span>, <span class="st">"red"</span>, <span class="st">"gray"</span>))</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># color based on weight</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">E</span>(g2)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">E</span>(g2)<span class="sc">$</span>weight <span class="sc">&gt;</span> .<span class="dv">025</span>, <span class="st">"darkred"</span>, <span class="st">"black"</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># plot subgraph</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2)<span class="sc">$</span>color,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="st">"black"</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2)<span class="sc">$</span>color, </span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Subset of Nodes and Edges"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -276,59 +260,39 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>To explore a subset of the network, we first filtered the nodes based on their region (Midwest and South). After narrowing down the dataset to these two regions, we randomly selected n=25 nodes to analyze further. This sampling ensures that we focus on a manageable portion of the network while retaining the regional diversity we are interested in. We then extracted the corresponding edges that connect these sampled nodes and created a subgraph for visualization. In this plot, nodes are colored according to their region: Midwest nodes are colored orange and South nodes are colored purple. The edges are colored based on their weight, with higher-weighted connections shown in dark red. This approach allows us to examine the structure of a smaller, region-specific portion of the network.</p>
+<p>To explore a subset of the network, we first filtered the nodes based on their region (Midwest and South). After narrowing down the nodes to these two regions, we randomly selected <span class="math inline">\(n=25\)</span> nodes to analyze further. This sampling ensures that we focus on a manageable portion of the network while retaining the regional diversity we are interested in. We then extracted the corresponding edges that connect these sampled nodes and created a subgraph for visualization. In this plot, nodes are colored according to their region: Midwest nodes are colored orange and South nodes are colored purple. The edges are colored based on their weight, with higher-weighted connections shown in dark red. This approach allows us to examine the structure of a smaller, region-specific portion of the network.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sample from node attributes, then match to corresponding connections in the network</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># filter the nodes by region (Midwest and South)</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>filtered_nodes <span class="ot">&lt;-</span> cnet_node_attributes[cnet_node_attributes<span class="sc">$</span>region <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Midwest"</span>, <span class="st">"South"</span>), ]</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>filtered_nodes <span class="ot">&lt;-</span> <span class="fu">V</span>(cnet_igraph)[<span class="fu">V</span>(cnet_igraph)<span class="sc">$</span>region <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Midwest"</span>, <span class="st">"South"</span>)] <span class="sc">%&gt;%</span> <span class="fu">as.vector</span>()</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># random sample from the filtered nodes</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>sample_nodes <span class="ot">&lt;-</span> filtered_nodes[<span class="fu">sample</span>(<span class="fu">nrow</span>(filtered_nodes), <span class="at">size =</span> <span class="dv">25</span>), ]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>sample_nodes <span class="ot">&lt;-</span> filtered_nodes[<span class="fu">sample</span>(<span class="fu">length</span>(filtered_nodes), <span class="at">size =</span> <span class="dv">25</span>)]</span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># make sure attributes and nodes match</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>id_node <span class="ot">&lt;-</span> sample_nodes<span class="sc">$</span>node</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>id_from <span class="ot">&lt;-</span> network_df<span class="sc">$</span>from</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>id_to <span class="ot">&lt;-</span> network_df<span class="sc">$</span>to</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>net_sam <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">from =</span> <span class="fu">double</span>(),</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>                      <span class="at">to =</span> <span class="fu">integer</span>(),</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>                      <span class="at">weight =</span> <span class="fu">double</span>())</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> id_node) {</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (i <span class="sc">%in%</span> id_to <span class="sc">|</span> i <span class="sc">%in%</span> id_from) {</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    matches_from <span class="ot">&lt;-</span> <span class="fu">subset</span>(network_df, from <span class="sc">==</span> i)</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    matches_to <span class="ot">&lt;-</span> <span class="fu">subset</span>(network_df, to <span class="sc">==</span> i)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    net_sam <span class="ot">&lt;-</span> <span class="fu">rbind</span>(net_sam, matches_from, matches_to)</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co"># only keep the sampled nodes</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>net_sam <span class="ot">&lt;-</span> <span class="fu">subset</span>(net_sam, from <span class="sc">%in%</span> sample_nodes<span class="sc">$</span>node <span class="sc">&amp;</span> to <span class="sc">%in%</span> sample_nodes<span class="sc">$</span>node)</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="co"># subgraph from the sampled nodes and filtered edges</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">graph_from_data_frame</span>(net_sam,</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>                            <span class="at">directed =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>                            <span class="at">vertices =</span> sample_nodes)</span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="co"># colors based on region</span></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">V</span>(g2)<span class="sc">$</span>region <span class="sc">==</span> <span class="st">"Midwest"</span>, <span class="st">"orange"</span>, </span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">ifelse</span>(<span class="fu">V</span>(g2)<span class="sc">$</span>region <span class="sc">==</span> <span class="st">"South"</span>, <span class="st">"purple"</span>, <span class="st">"gray"</span>))</span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="co"># colors based on weight</span></span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="fu">E</span>(g2)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">E</span>(g2)<span class="sc">$</span>weight <span class="sc">&gt;</span> <span class="fl">0.025</span>, <span class="st">"darkred"</span>, <span class="st">"black"</span>)</span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2,</span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2)<span class="sc">$</span>color,</span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2)<span class="sc">$</span>color, </span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Random Sample of 25 Nodes (Filtered by Midwest and South Regions)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph using sampled nodes</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>g2 <span class="ot">&lt;-</span> <span class="fu">subgraph</span>(cnet_igraph, sample_nodes)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co"># colors based on region</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">V</span>(g2)<span class="sc">$</span>region <span class="sc">==</span> <span class="st">"Midwest"</span>, <span class="st">"orange"</span>, </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">ifelse</span>(<span class="fu">V</span>(g2)<span class="sc">$</span>region <span class="sc">==</span> <span class="st">"South"</span>, <span class="st">"purple"</span>, <span class="st">"gray"</span>))</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># colors based on weight</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="fu">E</span>(g2)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(<span class="fu">E</span>(g2)<span class="sc">$</span>weight <span class="sc">&gt;</span> <span class="fl">0.025</span>, <span class="st">"darkred"</span>, <span class="st">"black"</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co"># plot subgraph</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2)<span class="sc">$</span>color,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2)<span class="sc">$</span>color, </span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Random Sample of 25 Nodes (Filtered by Midwest and South Regions)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -348,12 +312,18 @@ window.Quarto = {
 </ul>
 <p>The below code chunk shows how we can calculate these centrality metrics for our network data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>degree_metric <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">degree =</span> <span class="fu">degree</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">degree</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>)))</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>closeness_metric <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">closeness =</span> <span class="fu">closeness</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">closeness</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>)))</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>betweenness_metric <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">betweenness =</span> <span class="fu">betweenness</span>(cnet_igraph), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">betweenness</span>(cnet_igraph)))</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>degree_metric <span class="sc">%&gt;%</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate degrees for each node</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>degree_metric <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">degree =</span> <span class="fu">degree</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">degree</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>)))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the closeness for each node</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>closeness_metric <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">closeness =</span> <span class="fu">closeness</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">closeness</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>)))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the betweenness for each node</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>betweenness_metric <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">betweenness =</span> <span class="fu">betweenness</span>(cnet_igraph), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">betweenness</span>(cnet_igraph)))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"># show the degree for the first several nodes</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>degree_metric <span class="sc">%&gt;%</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 2
   degree  node
@@ -365,8 +335,9 @@ window.Quarto = {
 5     65     5
 6     23     6</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>closeness_metric <span class="sc">%&gt;%</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># show the closeness for the first several nodes</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>closeness_metric <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 2
   closeness  node
@@ -378,8 +349,9 @@ window.Quarto = {
 5     0.687     5
 6     0.555     6</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>betweenness_metric <span class="sc">%&gt;%</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># show the betweenness for the first several nodes</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>betweenness_metric <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 2
   betweenness  node
@@ -394,19 +366,20 @@ window.Quarto = {
 </div>
 <p>Next we want to find what nodes in our network are the most central based off of these metrics. The code below creates tables with the top five nodes based off of each metric.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>highest_5_degree <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">degree =</span> <span class="fu">degree</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">degree</span>(cnet_igraph))) <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>degree) <span class="sc">|&gt;</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get the nodes with the highest degree</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>highest_5_degree <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">degree =</span> <span class="fu">degree</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">degree</span>(cnet_igraph))) <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>degree) <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span>
 <span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>cnet_node_attributes <span class="sc">|&gt;</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cnet_node_attributes<span class="sc">$</span>node <span class="sc">%in%</span> highest_5_degree<span class="sc">$</span>node) <span class="sc">|&gt;</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(node, congressperson) <span class="sc">|&gt;</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(highest_5_degree) <span class="sc">|&gt;</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>node) <span class="sc">|&gt;</span></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>degree) <span class="sc">|&gt;</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">"striped"</span>, <span class="at">full_width =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"># identify the congresspeople with the highest degree and show results</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>cnet_node_attributes <span class="sc">|&gt;</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cnet_node_attributes<span class="sc">$</span>node <span class="sc">%in%</span> highest_5_degree<span class="sc">$</span>node) <span class="sc">|&gt;</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(node, congressperson) <span class="sc">|&gt;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(highest_5_degree) <span class="sc">|&gt;</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>node) <span class="sc">|&gt;</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>degree) <span class="sc">|&gt;</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">"striped"</span>, <span class="at">full_width =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(node)`</code></pre>
 </div>
@@ -444,18 +417,20 @@ window.Quarto = {
 
 
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>highest_5_closeness <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">closeness =</span> <span class="fu">closeness</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">closeness</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>))) <span class="sc">|&gt;</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>closeness) <span class="sc">|&gt;</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>cnet_node_attributes <span class="sc">|&gt;</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cnet_node_attributes<span class="sc">$</span>node <span class="sc">%in%</span> highest_5_closeness<span class="sc">$</span>node) <span class="sc">|&gt;</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(node, congressperson) <span class="sc">|&gt;</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(highest_5_closeness) <span class="sc">|&gt;</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>node) <span class="sc">|&gt;</span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>closeness) <span class="sc">|&gt;</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">"striped"</span>, <span class="at">full_width =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get the nodes with the highest closeness</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>highest_5_closeness <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">closeness =</span> <span class="fu">closeness</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">closeness</span>(cnet_igraph, <span class="at">mode =</span> <span class="st">"all"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>closeness) <span class="sc">|&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># identify the congresspeople with the highest closeness and show results</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>cnet_node_attributes <span class="sc">|&gt;</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cnet_node_attributes<span class="sc">$</span>node <span class="sc">%in%</span> highest_5_closeness<span class="sc">$</span>node) <span class="sc">|&gt;</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(node, congressperson) <span class="sc">|&gt;</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(highest_5_closeness) <span class="sc">|&gt;</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>node) <span class="sc">|&gt;</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>closeness) <span class="sc">|&gt;</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">"striped"</span>, <span class="at">full_width =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(node)`</code></pre>
 </div>
@@ -493,18 +468,20 @@ window.Quarto = {
 
 
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>highest_5_betweenness <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">betweenness =</span> <span class="fu">betweenness</span>(cnet_igraph), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">betweenness</span>(cnet_igraph))) <span class="sc">|&gt;</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>betweenness) <span class="sc">|&gt;</span></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>cnet_node_attributes <span class="sc">|&gt;</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cnet_node_attributes<span class="sc">$</span>node <span class="sc">%in%</span> highest_5_betweenness<span class="sc">$</span>node) <span class="sc">|&gt;</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(node, congressperson) <span class="sc">|&gt;</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(highest_5_betweenness) <span class="sc">|&gt;</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>node) <span class="sc">|&gt;</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>betweenness) <span class="sc">|&gt;</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">"striped"</span>, <span class="at">full_width =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get the nodes with the highest betweennes</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>highest_5_betweenness <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">betweenness =</span> <span class="fu">betweenness</span>(cnet_igraph), <span class="at">node =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(<span class="fu">betweenness</span>(cnet_igraph))) <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>betweenness) <span class="sc">|&gt;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># identify the congresspeople with the highest betweenness and show results</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>cnet_node_attributes <span class="sc">|&gt;</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cnet_node_attributes<span class="sc">$</span>node <span class="sc">%in%</span> highest_5_betweenness<span class="sc">$</span>node) <span class="sc">|&gt;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(node, congressperson) <span class="sc">|&gt;</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(highest_5_betweenness) <span class="sc">|&gt;</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>node) <span class="sc">|&gt;</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>betweenness) <span class="sc">|&gt;</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">"striped"</span>, <span class="at">full_width =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(node)`</code></pre>
 </div>
@@ -556,107 +533,119 @@ window.Quarto = {
 </ul>
 <p>First we are going to create a few important subgraphs including the Democratic and Republican subgraphs, the House and Senate subgraphs, and the subgraphs for each region.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_dem <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"party"</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"D"</span>) </span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_rep <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"party"</span></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"R"</span>) </span>
-<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_senate <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
-<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
-<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"chamber"</span></span>
-<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"Senate"</span>)</span>
-<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_house <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
-<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
-<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">"chamber"</span></span>
-<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"House"</span>)</span>
-<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_midwest <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
-<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
-<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a>        <span class="st">"region"</span></span>
-<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"Midwest"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replace_na</span>(<span class="cn">FALSE</span>)</span>
-<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_west <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-48"><a href="#cb18-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
-<span id="cb18-49"><a href="#cb18-49" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-50"><a href="#cb18-50" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
-<span id="cb18-51"><a href="#cb18-51" aria-hidden="true" tabindex="-1"></a>        <span class="st">"region"</span></span>
-<span id="cb18-52"><a href="#cb18-52" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-53"><a href="#cb18-53" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"West"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb18-54"><a href="#cb18-54" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replace_na</span>(<span class="cn">FALSE</span>)</span>
-<span id="cb18-55"><a href="#cb18-55" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-56"><a href="#cb18-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-57"><a href="#cb18-57" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_south <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-58"><a href="#cb18-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
-<span id="cb18-59"><a href="#cb18-59" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-60"><a href="#cb18-60" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
-<span id="cb18-61"><a href="#cb18-61" aria-hidden="true" tabindex="-1"></a>        <span class="st">"region"</span></span>
-<span id="cb18-62"><a href="#cb18-62" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-63"><a href="#cb18-63" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"South"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb18-64"><a href="#cb18-64" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replace_na</span>(<span class="cn">FALSE</span>)</span>
-<span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb18-66"><a href="#cb18-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-67"><a href="#cb18-67" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_northeast <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-68"><a href="#cb18-68" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
-<span id="cb18-69"><a href="#cb18-69" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
-<span id="cb18-70"><a href="#cb18-70" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
-<span id="cb18-71"><a href="#cb18-71" aria-hidden="true" tabindex="-1"></a>        <span class="st">"region"</span></span>
-<span id="cb18-72"><a href="#cb18-72" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
-<span id="cb18-73"><a href="#cb18-73" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"Northeast"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb18-74"><a href="#cb18-74" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replace_na</span>(<span class="cn">FALSE</span>)</span>
-<span id="cb18-75"><a href="#cb18-75" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph of democrats</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_dem <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"party"</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"D"</span>) </span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph of republicans</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_rep <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>        <span class="st">"party"</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"R"</span>) </span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph of senators</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_senate <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        <span class="st">"chamber"</span></span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"Senate"</span>)</span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph of representatives</span></span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_house <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>        <span class="st">"chamber"</span></span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"House"</span>)</span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph of congresspeople from the midwest</span></span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_midwest <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a>        <span class="st">"region"</span></span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-48"><a href="#cb18-48" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"Midwest"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-49"><a href="#cb18-49" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replace_na</span>(<span class="cn">FALSE</span>)</span>
+<span id="cb18-50"><a href="#cb18-50" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-51"><a href="#cb18-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-52"><a href="#cb18-52" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph of congresspeople from the west</span></span>
+<span id="cb18-53"><a href="#cb18-53" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_west <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-54"><a href="#cb18-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
+<span id="cb18-55"><a href="#cb18-55" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-56"><a href="#cb18-56" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
+<span id="cb18-57"><a href="#cb18-57" aria-hidden="true" tabindex="-1"></a>        <span class="st">"region"</span></span>
+<span id="cb18-58"><a href="#cb18-58" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-59"><a href="#cb18-59" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"West"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-60"><a href="#cb18-60" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replace_na</span>(<span class="cn">FALSE</span>)</span>
+<span id="cb18-61"><a href="#cb18-61" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-62"><a href="#cb18-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-63"><a href="#cb18-63" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph of congresspeople from the south</span></span>
+<span id="cb18-64"><a href="#cb18-64" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_south <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
+<span id="cb18-66"><a href="#cb18-66" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-67"><a href="#cb18-67" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
+<span id="cb18-68"><a href="#cb18-68" aria-hidden="true" tabindex="-1"></a>        <span class="st">"region"</span></span>
+<span id="cb18-69"><a href="#cb18-69" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-70"><a href="#cb18-70" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"South"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-71"><a href="#cb18-71" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replace_na</span>(<span class="cn">FALSE</span>)</span>
+<span id="cb18-72"><a href="#cb18-72" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb18-73"><a href="#cb18-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-74"><a href="#cb18-74" aria-hidden="true" tabindex="-1"></a><span class="co"># create subgraph of congresspeople from the northeast</span></span>
+<span id="cb18-75"><a href="#cb18-75" aria-hidden="true" tabindex="-1"></a>cnet_subgraph_northeast <span class="ot">&lt;-</span> cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-76"><a href="#cb18-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subgraph</span>(</span>
+<span id="cb18-77"><a href="#cb18-77" aria-hidden="true" tabindex="-1"></a>    cnet_igraph <span class="sc">%&gt;%</span></span>
+<span id="cb18-78"><a href="#cb18-78" aria-hidden="true" tabindex="-1"></a>      <span class="fu">vertex_attr</span>(</span>
+<span id="cb18-79"><a href="#cb18-79" aria-hidden="true" tabindex="-1"></a>        <span class="st">"region"</span></span>
+<span id="cb18-80"><a href="#cb18-80" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">%&gt;%</span></span>
+<span id="cb18-81"><a href="#cb18-81" aria-hidden="true" tabindex="-1"></a>      <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="st">"Northeast"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-82"><a href="#cb18-82" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replace_na</span>(<span class="cn">FALSE</span>)</span>
+<span id="cb18-83"><a href="#cb18-83" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Next we will calculate the metrics for each of the subgraphs and the overall graph and use the <code>kable</code> package to display the results.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>graphs <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="fu">rep</span>(<span class="st">"cnet_subgraph"</span>, <span class="dv">8</span>), </span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">c</span>(<span class="st">"dem"</span>, <span class="st">"rep"</span>, <span class="st">"house"</span>, <span class="st">"senate"</span>, <span class="st">"midwest"</span>, <span class="st">"west"</span>, <span class="st">"south"</span>, <span class="st">"northeast"</span>),</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">sep =</span> <span class="st">"_"</span>)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"reciprocity"</span>, <span class="st">"transitivity"</span>, <span class="st">"edge_density"</span>, <span class="st">"mean_distance"</span>)</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>graph_metrics <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">c</span>(<span class="st">"cnet_igraph"</span>, graphs), </span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(graph) {</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>         <span class="fu">lapply</span>(metrics,</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>                <span class="cf">function</span>(metric) {</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">get</span>(metric, <span class="at">mode =</span> <span class="st">"function"</span>)(<span class="fu">get</span>(graph))</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>                })</span>
-<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>graph_metrics <span class="sc">%&gt;%</span> </span>
-<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unlist</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">matrix</span>(</span>
-<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">ncol =</span> <span class="fu">length</span>(metrics),</span>
-<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">byrow =</span> <span class="cn">TRUE</span></span>
-<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">colnames&lt;-</span><span class="st">`</span>(metrics) <span class="sc">%&gt;%</span></span>
-<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">rownames&lt;-</span><span class="st">`</span>(<span class="fu">c</span>(<span class="st">"overall"</span>, <span class="fu">c</span>(<span class="st">"dem"</span>, <span class="st">"rep"</span>, <span class="st">"house"</span>, <span class="st">"senate"</span>, <span class="st">"midwest"</span>, <span class="st">"west"</span>, <span class="st">"south"</span>, <span class="st">"northeast"</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create vector containing the names of all 8 subgraphs</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>graphs <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="fu">rep</span>(<span class="st">"cnet_subgraph"</span>, <span class="dv">8</span>), </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">c</span>(<span class="st">"dem"</span>, <span class="st">"rep"</span>, <span class="st">"house"</span>, <span class="st">"senate"</span>, <span class="st">"midwest"</span>, <span class="st">"west"</span>, <span class="st">"south"</span>, <span class="st">"northeast"</span>),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">sep =</span> <span class="st">"_"</span>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="co"># create vector containing the names of the metrics we wish to calculate</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"reciprocity"</span>, <span class="st">"transitivity"</span>, <span class="st">"edge_density"</span>, <span class="st">"mean_distance"</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="co"># compute the metrics for each subgraph</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>graph_metrics <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">c</span>(<span class="st">"cnet_igraph"</span>, graphs), </span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(graph) {</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>         <span class="fu">lapply</span>(metrics,</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>                <span class="cf">function</span>(metric) {</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">get</span>(metric, <span class="at">mode =</span> <span class="st">"function"</span>)(<span class="fu">get</span>(graph))</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>                })</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a><span class="co"># show metrics for each subgraph and the overall network</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>graph_metrics <span class="sc">%&gt;%</span> </span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unlist</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">matrix</span>(</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">ncol =</span> <span class="fu">length</span>(metrics),</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">byrow =</span> <span class="cn">TRUE</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">colnames&lt;-</span><span class="st">`</span>(metrics) <span class="sc">%&gt;%</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">rownames&lt;-</span><span class="st">`</span>(<span class="fu">c</span>(<span class="st">"overall"</span>, <span class="fu">c</span>(<span class="st">"dem"</span>, <span class="st">"rep"</span>, <span class="st">"house"</span>, <span class="st">"senate"</span>, <span class="st">"midwest"</span>, <span class="st">"west"</span>, <span class="st">"south"</span>, <span class="st">"northeast"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <thead>
@@ -785,30 +774,31 @@ window.Quarto = {
 <span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>      <span class="fu">sum</span>(<span class="fu">abs</span>(stat.dist <span class="sc">&lt;=</span> dist.mean <span class="sc">-</span> <span class="fu">abs</span>(test.stat <span class="sc">-</span> dist.mean)))<span class="sc">/</span>n</span>
 <span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>  <span class="co"># prepare list for output</span></span>
 <span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
 <span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">dist =</span> stat.dist,</span>
 <span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">stat =</span> test.stat,</span>
 <span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">pval =</span> pval</span>
 <span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
-<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a><span class="co"># prepare matrix to store t-test results</span></span>
-<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>t.test.results <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
-<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">rep</span>(<span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">length</span>(groups)), <span class="fu">length</span>(metrics)),</span>
-<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="fu">length</span>(graphs), </span>
-<span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="fu">length</span>(metrics), </span>
-<span id="cb20-59"><a href="#cb20-59" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> (<span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"dem"</span>, <span class="st">"rep"</span>, <span class="st">"house"</span>, <span class="st">"senate"</span>, <span class="st">"midwest"</span>, <span class="st">"west"</span>, <span class="st">"south"</span>, <span class="st">"northeast"</span>), metrics))</span>
-<span id="cb20-60"><a href="#cb20-60" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-61"><a href="#cb20-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-62"><a href="#cb20-62" aria-hidden="true" tabindex="-1"></a><span class="co"># perform t-tests on subgraph metrics</span></span>
-<span id="cb20-63"><a href="#cb20-63" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(graphs)) {</span>
-<span id="cb20-64"><a href="#cb20-64" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(metrics)) {</span>
-<span id="cb20-65"><a href="#cb20-65" aria-hidden="true" tabindex="-1"></a>    t.test.results[i,j] <span class="ot">&lt;-</span> <span class="fu">resample.t.test</span>(cnet_igraph, <span class="fu">get</span>(graphs[i]), metrics[j], <span class="dv">10000</span>, <span class="st">"two-tailed"</span>)<span class="sc">$</span>pval</span>
-<span id="cb20-66"><a href="#cb20-66" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb20-67"><a href="#cb20-67" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return output</span></span>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(out)</span>
+<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a><span class="co"># prepare matrix to store t-test results</span></span>
+<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>t.test.results <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> <span class="fu">rep</span>(<span class="fu">rep</span>(<span class="dv">0</span>, <span class="fu">length</span>(groups)), <span class="fu">length</span>(metrics)),</span>
+<span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="fu">length</span>(graphs), </span>
+<span id="cb20-59"><a href="#cb20-59" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="fu">length</span>(metrics), </span>
+<span id="cb20-60"><a href="#cb20-60" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> (<span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"dem"</span>, <span class="st">"rep"</span>, <span class="st">"house"</span>, <span class="st">"senate"</span>, <span class="st">"midwest"</span>, <span class="st">"west"</span>, <span class="st">"south"</span>, <span class="st">"northeast"</span>), metrics))</span>
+<span id="cb20-61"><a href="#cb20-61" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-62"><a href="#cb20-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-63"><a href="#cb20-63" aria-hidden="true" tabindex="-1"></a><span class="co"># perform t-tests on subgraph metrics</span></span>
+<span id="cb20-64"><a href="#cb20-64" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(graphs)) {</span>
+<span id="cb20-65"><a href="#cb20-65" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(metrics)) {</span>
+<span id="cb20-66"><a href="#cb20-66" aria-hidden="true" tabindex="-1"></a>    t.test.results[i,j] <span class="ot">&lt;-</span> <span class="fu">resample.t.test</span>(cnet_igraph, <span class="fu">get</span>(graphs[i]), metrics[j], <span class="dv">10000</span>, <span class="st">"two-tailed"</span>)<span class="sc">$</span>pval</span>
+<span id="cb20-67"><a href="#cb20-67" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb20-68"><a href="#cb20-68" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The results of our hypothesis test are shown in the following table.</p>
 <div class="cell">
@@ -894,43 +884,52 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># apply benjamini-yekuteili correction and print results</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>t.test.results <span class="sc">%&gt;%</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">subgraph =</span> <span class="fu">row.names</span>(.),</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="st">"reciprocity"</span></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">row.names&lt;-</span><span class="st">`</span>(<span class="cn">NULL</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span>subgraph,</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"metric"</span>,</span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"p.value"</span></span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(</span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    p.value</span>
-<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">i =</span> <span class="fu">row_number</span>()</span>
-<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(i) <span class="sc">%&gt;%</span></span>
-<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">p.by =</span> <span class="fu">nrow</span>(.)<span class="sc">*</span><span class="fu">sum</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">1</span><span class="sc">:</span>i)<span class="sc">*</span>p.value<span class="sc">/</span>i</span>
-<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
-<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span>i,<span class="sc">-</span>p.value</span>
-<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
-<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_from =</span> metric,</span>
-<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_from =</span> p.by</span>
-<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(</span>
-<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>    reciprocity,</span>
-<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>    transitivity,</span>
-<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="st">"edge_density"</span></span>
-<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
-<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Benjamini-Yekuteili Corrected Subgraph Metric p-values"</span></span>
-<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># convert to dataframe for easier manipulatioin</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add subgraph column</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">subgraph =</span> <span class="fu">row.names</span>(.),</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="st">"reciprocity"</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># reset rownames</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">row.names&lt;-</span><span class="st">`</span>(<span class="cn">NULL</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># pivot to long format</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span>subgraph,</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"metric"</span>,</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"p.value"</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sort by increasing p-value</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>    p.value</span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">i =</span> <span class="fu">row_number</span>()</span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(i) <span class="sc">%&gt;%</span></span>
+<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># apply benjamini-yekuteili correction</span></span>
+<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">p.by =</span> <span class="fu">nrow</span>(.)<span class="sc">*</span><span class="fu">sum</span>(<span class="dv">1</span><span class="sc">/</span><span class="dv">1</span><span class="sc">:</span>i)<span class="sc">*</span>p.value<span class="sc">/</span>i</span>
+<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove columns that are no longer needed</span></span>
+<span id="cb22-32"><a href="#cb22-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb22-33"><a href="#cb22-33" aria-hidden="true" tabindex="-1"></a>    <span class="sc">-</span>i,<span class="sc">-</span>p.value</span>
+<span id="cb22-34"><a href="#cb22-34" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-35"><a href="#cb22-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># pivot back to wide format for legibility</span></span>
+<span id="cb22-36"><a href="#cb22-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
+<span id="cb22-37"><a href="#cb22-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_from =</span> metric,</span>
+<span id="cb22-38"><a href="#cb22-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_from =</span> p.by</span>
+<span id="cb22-39"><a href="#cb22-39" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-40"><a href="#cb22-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(</span>
+<span id="cb22-41"><a href="#cb22-41" aria-hidden="true" tabindex="-1"></a>    reciprocity,</span>
+<span id="cb22-42"><a href="#cb22-42" aria-hidden="true" tabindex="-1"></a>    transitivity,</span>
+<span id="cb22-43"><a href="#cb22-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">.before =</span> <span class="st">"edge_density"</span></span>
+<span id="cb22-44"><a href="#cb22-44" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb22-45"><a href="#cb22-45" aria-hidden="true" tabindex="-1"></a>  <span class="co"># show results</span></span>
+<span id="cb22-46"><a href="#cb22-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(</span>
+<span id="cb22-47"><a href="#cb22-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Benjamini-Yekuteili Corrected Subgraph Metric p-values"</span></span>
+<span id="cb22-48"><a href="#cb22-48" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <caption>Benjamini-Yekuteili Corrected Subgraph Metric p-values</caption>
@@ -1057,15 +1056,16 @@ window.Quarto = {
 </div>
 <p>Now, we can visualize our reordered adjacency matrices using the <code>image()</code> function.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>cnet_adj_chamber <span class="sc">%&gt;%</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Matrix</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">image</span>(</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.regions =</span> <span class="fu">c</span>(<span class="st">"black"</span>),</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> <span class="cn">NULL</span>,</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="cn">NULL</span>,</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="cn">NULL</span>,</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Adjacency Matrix Ordered by Chamber"</span></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize adjacency matrix ordered by chamber</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>cnet_adj_chamber <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Matrix</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">image</span>(</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.regions =</span> <span class="fu">c</span>(<span class="st">"black"</span>),</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> <span class="cn">NULL</span>,</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="cn">NULL</span>,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="cn">NULL</span>,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Adjacency Matrix Ordered by Chamber"</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1076,15 +1076,16 @@ window.Quarto = {
 </div>
 <p>When the adjacency matrix of the Congress Twitter network is organized by the <code>chamber</code> attribute, we see two distinct regions of higher edge densities. These correspond to the House of Representatives (the larger square) and the Senate (the smaller square). The adjacency matrix ordered by <code>chamber</code> shows that members tend to interact more with other members in the same chamber, which agrees with our findings from the subgraph metrics and hypothesis testing.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>cnet_adj_party <span class="sc">%&gt;%</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Matrix</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">image</span>(</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.regions =</span> <span class="fu">c</span>(<span class="st">"black"</span>),</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> <span class="cn">NULL</span>,</span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="cn">NULL</span>,</span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="cn">NULL</span>,</span>
-<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Adjacency Matrix Ordered by Party"</span></span>
-<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize adjacency matrix ordered by party</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>cnet_adj_party <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Matrix</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">image</span>(</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.regions =</span> <span class="fu">c</span>(<span class="st">"black"</span>),</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> <span class="cn">NULL</span>,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="cn">NULL</span>,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="cn">NULL</span>,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Adjacency Matrix Ordered by Party"</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1095,15 +1096,16 @@ window.Quarto = {
 </div>
 <p>When the adjacency matrix of the Congress Twitter network is organized by the <code>party</code> attribute, we again can see two distinct regions of higher edge densities. This time, these correspond to the Democratic and Republican parties, and again demonstrate that members tend to interact with other members from the same party, as opposed to those across the aisle.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>cnet_adj_state <span class="sc">%&gt;%</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Matrix</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">image</span>(</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.regions =</span> <span class="fu">c</span>(<span class="st">"black"</span>),</span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> <span class="cn">NULL</span>,</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="cn">NULL</span>,</span>
-<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="cn">NULL</span>,</span>
-<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Adjacency Matrix Ordered by State"</span></span>
-<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize adjacency matrix ordered by state</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>cnet_adj_state <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Matrix</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">image</span>(</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.regions =</span> <span class="fu">c</span>(<span class="st">"black"</span>),</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> <span class="cn">NULL</span>,</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="cn">NULL</span>,</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="cn">NULL</span>,</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Adjacency Matrix Ordered by State"</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1114,15 +1116,16 @@ window.Quarto = {
 </div>
 <p>When we organize the adjacency matrix by the <code>state</code> attribute, we see a dark diagonal feature stretching across our adjacency matrix. This feature represents the interactions between congresspeople from the same state, and the higher edge density indicates that members of Congress also tend to interact with members from the same state than they do with members from other states.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>cnet_adj_region <span class="sc">%&gt;%</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Matrix</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">image</span>(</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.regions =</span> <span class="fu">c</span>(<span class="st">"black"</span>),</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> <span class="cn">NULL</span>,</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="cn">NULL</span>,</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="cn">NULL</span>,</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Adjacency Matrix Ordered by Region"</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize adjacency matrix ordered by region</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>cnet_adj_region <span class="sc">%&gt;%</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Matrix</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">image</span>(</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.regions =</span> <span class="fu">c</span>(<span class="st">"black"</span>),</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sub =</span> <span class="cn">NULL</span>,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">xlab =</span> <span class="cn">NULL</span>,</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ylab =</span> <span class="cn">NULL</span>,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">main =</span> <span class="st">"Adjacency Matrix Ordered by Region"</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1131,7 +1134,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>Finally, wehn we organize the adjacency matrix based on the region a member is from, we can make out four faint square-shaped regions of higher edge density. These squares represent interactions between members of the same regions, and just as with the other node attributes, we see that members tend to interact with those from the same region.</p>
+<p>Finally, when we organize the adjacency matrix based on the region a member is from, we can make out four faint square-shaped regions of higher edge density. These squares represent interactions between members of the same regions, and just as with the other node attributes, we see that members tend to interact with those from the same region.</p>
 </section>
 <section id="community-detection" class="level1">
 <h1>Community Detection</h1>
@@ -1148,17 +1151,18 @@ window.Quarto = {
 <span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="co"># assign colors to the communities</span></span>
 <span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2_filtered)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">factor</span>(community_walktrap<span class="sc">$</span>membership)</span>
 <span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2_filtered,</span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2_filtered)<span class="sc">$</span>color,</span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
-<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
-<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2_filtered)<span class="sc">$</span>color,</span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
-<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
-<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
-<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
-<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Community Detection (Filtered Graph with Walktrap)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="co"># plot results</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2_filtered,</span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2_filtered)<span class="sc">$</span>color,</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2_filtered)<span class="sc">$</span>color,</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Community Detection (Filtered Graph with Walktrap)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1176,30 +1180,33 @@ window.Quarto = {
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
 <span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>sample_size <span class="ot">&lt;-</span> <span class="fu">min</span>(<span class="dv">100</span>, total_edges)</span>
 <span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>sampled_edges <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">E</span>(g2), <span class="at">size =</span> sample_size)  <span class="co"># Sample edges</span></span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="co"># new graph with the sampled edges</span></span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>g2_sampled <span class="ot">&lt;-</span> <span class="fu">subgraph.edges</span>(g2, sampled_edges)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="co"># sample edges</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>sampled_edges <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">E</span>(g2), <span class="at">size =</span> sample_size)</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="co"># new graph with the sampled edges</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>g2_sampled <span class="ot">&lt;-</span> <span class="fu">subgraph.edges</span>(g2, sampled_edges)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: `subgraph.edges()` was deprecated in igraph 2.1.0.
 ℹ Please use `subgraph_from_edges()` instead.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Walktrap community detection on the sampled graph</span></span>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># walktrap community detection on the sampled graph</span></span>
 <span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>community_walktrap <span class="ot">&lt;-</span> <span class="fu">cluster_walktrap</span>(g2_sampled)</span>
 <span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2_sampled)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">factor</span>(community_walktrap<span class="sc">$</span>membership)</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2_sampled,</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2_sampled)<span class="sc">$</span>color,</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2_sampled)<span class="sc">$</span>color,</span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
-<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
-<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
-<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
-<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Community Detection (Sampled Graph with Walktrap)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># color based on community membership</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2_sampled)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">factor</span>(community_walktrap<span class="sc">$</span>membership)</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="co"># plot results</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2_sampled,</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2_sampled)<span class="sc">$</span>color,</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2_sampled)<span class="sc">$</span>color,</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Community Detection (Sampled Graph with Walktrap)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1217,22 +1224,24 @@ window.Quarto = {
 <span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="co"># subgraph containing only the sampled nodes</span></span>
 <span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>g2_sampled_nodes <span class="ot">&lt;-</span> <span class="fu">induced_subgraph</span>(g2, <span class="at">vids =</span> sampled_nodes)</span>
 <span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="co"># perform Walktrap community detection on the sampled graph</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a><span class="co"># perform walktrap community detection on the sampled graph</span></span>
 <span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>community_walktrap <span class="ot">&lt;-</span> <span class="fu">cluster_walktrap</span>(g2_sampled_nodes)</span>
 <span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2_sampled_nodes)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">factor</span>(community_walktrap<span class="sc">$</span>membership)</span>
-<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2_sampled_nodes,</span>
-<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
-<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2_sampled_nodes)<span class="sc">$</span>color,</span>
-<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
-<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
-<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2_sampled_nodes)<span class="sc">$</span>color,</span>
-<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
-<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
-<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
-<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
-<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Community Detection (Sampled Nodes with Walktrap)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a><span class="co"># color based on community membership</span></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2_sampled_nodes)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">factor</span>(community_walktrap<span class="sc">$</span>membership)</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a><span class="co"># plot results</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2_sampled_nodes,</span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2_sampled_nodes)<span class="sc">$</span>color,</span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2_sampled_nodes)<span class="sc">$</span>color,</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Community Detection (Sampled Nodes with Walktrap)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1247,22 +1256,24 @@ window.Quarto = {
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>low_degree_nodes <span class="ot">&lt;-</span> <span class="fu">V</span>(g2)[<span class="fu">degree</span>(g2) <span class="sc">&lt;</span> <span class="dv">3</span>]</span>
 <span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>g2_pruned <span class="ot">&lt;-</span> <span class="fu">delete_edges</span>(g2, <span class="fu">E</span>(g2)[<span class="fu">.from</span>(low_degree_nodes) <span class="sc">|</span> <span class="fu">.to</span>(low_degree_nodes)])</span>
 <span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Walktrap community detection on the pruned graph</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="co"># walktrap community detection on the pruned graph</span></span>
 <span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>community_walktrap <span class="ot">&lt;-</span> <span class="fu">cluster_walktrap</span>(g2_pruned)</span>
 <span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2_pruned)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">factor</span>(community_walktrap<span class="sc">$</span>membership)</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2_pruned,</span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
-<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2_pruned)<span class="sc">$</span>color,</span>
-<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
-<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
-<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2_pruned)<span class="sc">$</span>color,</span>
-<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
-<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
-<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
-<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
-<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Community Detection (Pruned Graph with Walktrap)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="co"># color based on community membership</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a><span class="fu">V</span>(g2_pruned)<span class="sc">$</span>color <span class="ot">&lt;-</span> <span class="fu">factor</span>(community_walktrap<span class="sc">$</span>membership)</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a><span class="co"># plot results</span></span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(g2_pruned,</span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.width =</span> <span class="dv">2</span>,</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.color =</span> <span class="fu">E</span>(g2_pruned)<span class="sc">$</span>color,</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.curved =</span> <span class="fl">0.2</span>,</span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">edge.arrow.size =</span> <span class="fl">0.5</span>,</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.color =</span> <span class="fu">V</span>(g2_pruned)<span class="sc">$</span>color,</span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.size =</span> <span class="dv">30</span>,</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.frame.color =</span> <span class="st">"black"</span>,</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">vertex.label.color =</span> <span class="st">"white"</span>,</span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>     <span class="at">layout =</span> layout_with_fr,</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Community Detection (Pruned Graph with Walktrap)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">

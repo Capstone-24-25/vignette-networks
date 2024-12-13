@@ -53,65 +53,47 @@ The primary R package for creating network visualizations is igraph. By converti
 
 
 ```{r}
+# color nodes based on party membership
 V(cnet_igraph)$color <- ifelse(V(cnet_igraph)$party == "D", "blue", 
                       ifelse(V(cnet_igraph)$party == "R", "red", "gray"))
+
+# plot congress network
 plot(cnet_igraph,
      main = "Complete Network Graph")
 ```
 
 As shown, the initial plot is cluttered and difficult to interpret due to the excessive number of nodes, and no specific attribute was assigned as vertex labels. Additionally, node colors are determined by party affiliation, highlighting group differences.
 
-To address this, we created subgraphs by filtering the nodes based on specific attributes, such as region. In the subgraph below, we focused on the Midwest and South regions, with nodes in the Midwest colored orange, nodes in the South colored purple, and all other nodes colored gray. This allows us to clearly distinguish between these regions while maintaining the overall structure of the network.
+To address this, we created subgraphs by filtering the nodes based on specific attributes, such as region. In the subgraph below, we focused on the Midwest and South regions, with nodes in the Midwest colored orange and nodes in the South colored purple. This allows us to clearly distinguish between these regions while maintaining the overall structure of the network.
 
 ```{r}
 # filter nodes by attributes (party or region)
-sub_nodes <- V(cnet_igraph)[party %in% c("D", "R") | region %in% c("Midwest", "South")]
+sub_nodes <- V(cnet_igraph)[party %in% c("D", "R") & region %in% c("Midwest", "South")]
 
+# generate induced subgraph based on filtered nodes
 sub_g <- induced_subgraph(cnet_igraph, vids = sub_nodes)
 
-# colors based on region
-V(sub_g)$color <- ifelse(V(sub_g)$region == "Midwest", "orange", 
-                      ifelse(V(sub_g)$region == "South", "purple", "gray"))
+# color nodes based on region
+V(sub_g)$color <- ifelse(V(sub_g)$region == "Midwest", "orange", "purple")
 
+# plot subgraph
 plot(sub_g,
      main = "Subgraph of Filtered Nodes (Region)")
 ```
 
-Similar to the first plot, this visualization also suffers from readability issues due to the dense network. To address this, we applied a similar approach to simplify the graph.
-
-Below, we randomly sampled individuals from the attributes dataframe and matched them to their connections in the network dataframe to create a plot of this random sample. The node colors in the plot are determined by party affiliation, enhancing the visual distinction between groups. While not depicted here, additional noise reduction can be achieved by filtering the data based on specific attributes.
+Similar to the first plot, this visualization also suffers from readability issues due to the dense network. To address, we will instead sample 25 nodes and obtain a subgraph containing just these nodes and the edges between them. The node colors in the plot are determined by party affiliation, enhancing the visual distinction between groups. While not depicted here, additional noise reduction can be achieved by filtering the data based on specific attributes.
 
 ```{r}
 # load in node attributes
 cnet_node_attributes <- read_csv("data/congress_node_attributes.csv",
                                  show_col_types = FALSE)
 
-# sample from node attributes, then name in sample 
+# sample 25 nodes
 set.seed(123)
-sample_indices <- sample(nrow(cnet_node_attributes), size = 25)
-sample_nodes <- cnet_node_attributes[sample_indices,]
+sample_nodes <- sample(length(cnet_igraph), size = 25)
 
-# want to make sure the attributes and nodes match
-id_node <- sample_nodes$node
-id_from <- network_df$from
-id_to <- network_df$to
-net_sam <- data.frame(from = double(),
-                      to = integer(),
-                      weight = double())
-
-for (i in id_node){
-  if (i %in% id_to | i %in% id_from){
-    matches_from <- subset(network_df, from == i)
-    matches_to <- subset(network_df, to == i)
-    net_sam <- rbind(net_sam, matches_from, matches_to)
-  }
-}
-
-net_sam <- subset(net_sam, from %in% sample_nodes$node & to %in% sample_nodes$node)
-
-g2 <- graph_from_data_frame(net_sam,
-                            directed = TRUE,
-                            vertices = sample_nodes)
+# create subgraph using sampled nodes
+g2 <- subgraph(cnet_igraph, sample_nodes)
 
 # colors based on party
 V(g2)$color <- ifelse(V(g2)$party == "D", "blue", 
@@ -120,6 +102,7 @@ V(g2)$color <- ifelse(V(g2)$party == "D", "blue",
 # color based on weight
 E(g2)$color <- ifelse(E(g2)$weight > .025, "darkred", "black")
 
+# plot subgraph
 plot(g2,
      edge.width = 2,
      edge.color = E(g2)$color,
@@ -134,41 +117,20 @@ plot(g2,
      main = "Subset of Nodes and Edges")
 ```
 
-To explore a subset of the network, we first filtered the nodes based on their region (Midwest and South). After narrowing down the dataset to these two regions, we randomly selected n=25 nodes to analyze further. This sampling ensures that we focus on a manageable portion of the network while retaining the regional diversity we are interested in. We then extracted the corresponding edges that connect these sampled nodes and created a subgraph for visualization. In this plot, nodes are colored according to their region: Midwest nodes are colored orange and South nodes are colored purple. The edges are colored based on their weight, with higher-weighted connections shown in dark red. This approach allows us to examine the structure of a smaller, region-specific portion of the network.
+To explore a subset of the network, we first filtered the nodes based on their region (Midwest and South). After narrowing down the nodes to these two regions, we randomly selected $n=25$ nodes to analyze further. This sampling ensures that we focus on a manageable portion of the network while retaining the regional diversity we are interested in. We then extracted the corresponding edges that connect these sampled nodes and created a subgraph for visualization. In this plot, nodes are colored according to their region: Midwest nodes are colored orange and South nodes are colored purple. The edges are colored based on their weight, with higher-weighted connections shown in dark red. This approach allows us to examine the structure of a smaller, region-specific portion of the network.
 
 ```{r}
 # sample from node attributes, then match to corresponding connections in the network
 set.seed(123)
 
 # filter the nodes by region (Midwest and South)
-filtered_nodes <- cnet_node_attributes[cnet_node_attributes$region %in% c("Midwest", "South"), ]
+filtered_nodes <- V(cnet_igraph)[V(cnet_igraph)$region %in% c("Midwest", "South")] %>% as.vector()
 
 # random sample from the filtered nodes
-sample_nodes <- filtered_nodes[sample(nrow(filtered_nodes), size = 25), ]
+sample_nodes <- filtered_nodes[sample(length(filtered_nodes), size = 25)]
 
-# make sure attributes and nodes match
-id_node <- sample_nodes$node
-id_from <- network_df$from
-id_to <- network_df$to
-net_sam <- data.frame(from = double(),
-                      to = integer(),
-                      weight = double())
-
-for (i in id_node) {
-  if (i %in% id_to | i %in% id_from) {
-    matches_from <- subset(network_df, from == i)
-    matches_to <- subset(network_df, to == i)
-    net_sam <- rbind(net_sam, matches_from, matches_to)
-  }
-}
-
-# only keep the sampled nodes
-net_sam <- subset(net_sam, from %in% sample_nodes$node & to %in% sample_nodes$node)
-
-# subgraph from the sampled nodes and filtered edges
-g2 <- graph_from_data_frame(net_sam,
-                            directed = TRUE,
-                            vertices = sample_nodes)
+# create subgraph using sampled nodes
+g2 <- subgraph(cnet_igraph, sample_nodes)
 
 # colors based on region
 V(g2)$color <- ifelse(V(g2)$region == "Midwest", "orange", 
@@ -177,6 +139,7 @@ V(g2)$color <- ifelse(V(g2)$region == "Midwest", "orange",
 # colors based on weight
 E(g2)$color <- ifelse(E(g2)$weight > 0.025, "darkred", "black")
 
+# plot subgraph
 plot(g2,
      edge.width = 2,
      edge.color = E(g2)$color,
@@ -200,16 +163,24 @@ Centrality metrics are node specific measures that aim to quantify the importanc
 The below code chunk shows how we can calculate these centrality metrics for our network data.
 
 ```{r}
+# calculate degrees for each node
 degree_metric <- tibble(degree = degree(cnet_igraph, mode = "all"), node = 1:length(degree(cnet_igraph, mode = "all")))
+
+# calculate the closeness for each node
 closeness_metric <- tibble(closeness = closeness(cnet_igraph, mode = "all"), node = 1:length(closeness(cnet_igraph, mode = "all")))
+
+# calculate the betweenness for each node
 betweenness_metric <- tibble(betweenness = betweenness(cnet_igraph), node = 1:length(betweenness(cnet_igraph)))
 
+# show the degree for the first several nodes
 degree_metric %>%
   head()
 
+# show the closeness for the first several nodes
 closeness_metric %>%
   head()
 
+# show the betweenness for the first several nodes
 betweenness_metric %>%
   head()
 ```
@@ -217,11 +188,12 @@ betweenness_metric %>%
 Next we want to find what nodes in our network are the most central based off of these metrics. The code below creates tables with the top five nodes based off of each metric.
 
 ```{r}
+# get the nodes with the highest degree
 highest_5_degree <- tibble(degree = degree(cnet_igraph, mode = "all"), node = 1:length(degree(cnet_igraph))) |>
   arrange(-degree) |>
   slice(1:5)
 
-
+# identify the congresspeople with the highest degree and show results
 cnet_node_attributes |>
   filter(cnet_node_attributes$node %in% highest_5_degree$node) |>
   select(node, congressperson) |>
@@ -231,10 +203,12 @@ cnet_node_attributes |>
   kableExtra::kable() |>
   kableExtra::kable_styling(bootstrap_options = "striped", full_width = F)
 
+# get the nodes with the highest closeness
 highest_5_closeness <- tibble(closeness = closeness(cnet_igraph, mode = "all"), node = 1:length(closeness(cnet_igraph, mode = "all"))) |>
   arrange(-closeness) |>
   slice(1:5)
 
+# identify the congresspeople with the highest closeness and show results
 cnet_node_attributes |>
   filter(cnet_node_attributes$node %in% highest_5_closeness$node) |>
   select(node, congressperson) |>
@@ -244,11 +218,12 @@ cnet_node_attributes |>
   kableExtra::kable() |>
   kableExtra::kable_styling(bootstrap_options = "striped", full_width = F)
 
-
+# get the nodes with the highest betweennes
 highest_5_betweenness <- tibble(betweenness = betweenness(cnet_igraph), node = 1:length(betweenness(cnet_igraph))) |>
   arrange(-betweenness) |>
   slice(1:5)
 
+# identify the congresspeople with the highest betweenness and show results
 cnet_node_attributes |>
   filter(cnet_node_attributes$node %in% highest_5_betweenness$node) |>
   select(node, congressperson) |>
@@ -273,6 +248,7 @@ Graph and subgraphs metrics are used to measure qualities of the network as a wh
 First we are going to create a few important subgraphs including the Democratic and Republican subgraphs, the House and Senate subgraphs, and the subgraphs for each region.
 
 ```{r}
+# create subgraph of democrats
 cnet_subgraph_dem <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -282,6 +258,7 @@ cnet_subgraph_dem <- cnet_igraph %>%
       `==`("D") 
   )
 
+# create subgraph of republicans
 cnet_subgraph_rep <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -291,6 +268,7 @@ cnet_subgraph_rep <- cnet_igraph %>%
       `==`("R") 
   )
 
+# create subgraph of senators
 cnet_subgraph_senate <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -300,6 +278,7 @@ cnet_subgraph_senate <- cnet_igraph %>%
       `==`("Senate")
   )
 
+# create subgraph of representatives
 cnet_subgraph_house <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -309,6 +288,7 @@ cnet_subgraph_house <- cnet_igraph %>%
       `==`("House")
   )
 
+# create subgraph of congresspeople from the midwest
 cnet_subgraph_midwest <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -319,6 +299,7 @@ cnet_subgraph_midwest <- cnet_igraph %>%
       replace_na(FALSE)
   )
 
+# create subgraph of congresspeople from the west
 cnet_subgraph_west <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -329,6 +310,7 @@ cnet_subgraph_west <- cnet_igraph %>%
       replace_na(FALSE)
   )
 
+# create subgraph of congresspeople from the south
 cnet_subgraph_south <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -339,6 +321,7 @@ cnet_subgraph_south <- cnet_igraph %>%
       replace_na(FALSE)
   )
 
+# create subgraph of congresspeople from the northeast
 cnet_subgraph_northeast <- cnet_igraph %>%
   subgraph(
     cnet_igraph %>%
@@ -353,12 +336,15 @@ cnet_subgraph_northeast <- cnet_igraph %>%
 Next we will calculate the metrics for each of the subgraphs and the overall graph and use the `kable` package to display the results.
 
 ```{r}
+# create vector containing the names of all 8 subgraphs
 graphs <- paste(rep("cnet_subgraph", 8), 
                 c("dem", "rep", "house", "senate", "midwest", "west", "south", "northeast"),
                 sep = "_")
 
+# create vector containing the names of the metrics we wish to calculate
 metrics <- c("reciprocity", "transitivity", "edge_density", "mean_distance")
 
+# compute the metrics for each subgraph
 graph_metrics <- lapply(c("cnet_igraph", graphs), 
        function(graph) {
          lapply(metrics,
@@ -367,6 +353,7 @@ graph_metrics <- lapply(c("cnet_igraph", graphs),
                 })
 })
 
+# show metrics for each subgraph and the overall network
 graph_metrics %>% 
   unlist() %>%
   matrix(
@@ -429,13 +416,14 @@ resample.t.test <- function(graph, subgraph, statistic, n, type = c("upper", "lo
       sum(abs(stat.dist <= dist.mean - abs(test.stat - dist.mean)))/n
   }
   
-
+  # prepare list for output
   out <- list(
     dist = stat.dist,
     stat = test.stat,
     pval = pval
   )
   
+  # return output
   return(out)
 }
 
@@ -470,17 +458,22 @@ However, since we performed multiple hypothesis tests, we will need to correct o
 ```{r}
 # apply benjamini-yekuteili correction and print results
 t.test.results %>%
+  # convert to dataframe for easier manipulatioin
   as.data.frame() %>%
+  # add subgraph column
   mutate(
     subgraph = row.names(.),
     .before = "reciprocity"
   ) %>%
+  # reset rownames
   `row.names<-`(NULL) %>%
+  # pivot to long format
   pivot_longer(
     -subgraph,
     names_to = "metric",
     values_to = "p.value"
   ) %>%
+  # sort by increasing p-value
   arrange(
     p.value
   ) %>%
@@ -488,13 +481,16 @@ t.test.results %>%
     i = row_number()
   ) %>%
   group_by(i) %>%
+  # apply benjamini-yekuteili correction
   mutate(
     p.by = nrow(.)*sum(1/1:i)*p.value/i
   ) %>%
   ungroup() %>%
+  # remove columns that are no longer needed
   select(
     -i,-p.value
   ) %>%
+  # pivot back to wide format for legibility
   pivot_wider(
     names_from = metric,
     values_from = p.by
@@ -504,6 +500,7 @@ t.test.results %>%
     transitivity,
     .before = "edge_density"
   ) %>%
+  # show results
   kable(
     caption = "Benjamini-Yekuteili Corrected Subgraph Metric p-values"
   )
@@ -565,6 +562,7 @@ cnet_adj_region <- reorder_cnet_adj(cnet_adj, "region")
 Now, we can visualize our reordered adjacency matrices using the `image()` function.
 
 ```{r}
+# visualize adjacency matrix ordered by chamber
 cnet_adj_chamber %>%
   Matrix() %>%
   image(
@@ -579,6 +577,7 @@ cnet_adj_chamber %>%
 When the adjacency matrix of the Congress Twitter network is organized by the `chamber` attribute, we see two distinct regions of higher edge densities. These correspond to the House of Representatives (the larger square) and the Senate (the smaller square). The adjacency matrix ordered by `chamber` shows that members tend to interact more with other members in the same chamber, which agrees with our findings from the subgraph metrics and hypothesis testing.
 
 ```{r}
+# visualize adjacency matrix ordered by party
 cnet_adj_party %>%
   Matrix() %>%
   image(
@@ -593,6 +592,7 @@ cnet_adj_party %>%
 When the adjacency matrix of the Congress Twitter network is organized by the `party` attribute, we again can see two distinct regions of higher edge densities. This time, these correspond to the Democratic and Republican parties, and again demonstrate that members tend to interact with other members from the same party, as opposed to those across the aisle.
 
 ```{r}
+# visualize adjacency matrix ordered by state
 cnet_adj_state %>%
   Matrix() %>%
   image(
@@ -607,6 +607,7 @@ cnet_adj_state %>%
 When we organize the adjacency matrix by the `state` attribute, we see a dark diagonal feature stretching across our adjacency matrix. This feature represents the interactions between congresspeople from the same state, and the higher edge density indicates that members of Congress also tend to interact with members from the same state than they do with members from other states.
 
 ```{r}
+# visualize adjacency matrix ordered by region
 cnet_adj_region %>%
   Matrix() %>%
   image(
@@ -618,7 +619,7 @@ cnet_adj_region %>%
   )
 ```
 
-Finally, wehn we organize the adjacency matrix based on the region a member is from, we can make out four faint square-shaped regions of higher edge density. These squares represent interactions between members of the same regions, and just as with the other node attributes, we see that members tend to interact with those from the same region.
+Finally, when we organize the adjacency matrix based on the region a member is from, we can make out four faint square-shaped regions of higher edge density. These squares represent interactions between members of the same regions, and just as with the other node attributes, we see that members tend to interact with those from the same region.
 
 # Community Detection
 
@@ -638,6 +639,7 @@ community_walktrap <- cluster_walktrap(g2_filtered)
 # assign colors to the communities
 V(g2_filtered)$color <- factor(community_walktrap$membership)
 
+# plot results
 plot(g2_filtered,
      edge.width = 2,
      edge.color = E(g2_filtered)$color,
@@ -661,16 +663,19 @@ total_edges <- ecount(g2)
 set.seed(123)
 sample_size <- min(100, total_edges)
 
-sampled_edges <- sample(E(g2), size = sample_size)  # Sample edges
+# sample edges
+sampled_edges <- sample(E(g2), size = sample_size)
 
 # new graph with the sampled edges
 g2_sampled <- subgraph.edges(g2, sampled_edges)
 
-# Walktrap community detection on the sampled graph
+# walktrap community detection on the sampled graph
 community_walktrap <- cluster_walktrap(g2_sampled)
 
+# color based on community membership
 V(g2_sampled)$color <- factor(community_walktrap$membership)
 
+# plot results
 plot(g2_sampled,
      edge.width = 2,
      edge.color = E(g2_sampled)$color,
@@ -694,11 +699,13 @@ sampled_nodes <- sample(V(g2), size = 25)
 # subgraph containing only the sampled nodes
 g2_sampled_nodes <- induced_subgraph(g2, vids = sampled_nodes)
 
-# perform Walktrap community detection on the sampled graph
+# perform walktrap community detection on the sampled graph
 community_walktrap <- cluster_walktrap(g2_sampled_nodes)
 
+# color based on community membership
 V(g2_sampled_nodes)$color <- factor(community_walktrap$membership)
 
+# plot results
 plot(g2_sampled_nodes,
      edge.width = 2,
      edge.color = E(g2_sampled_nodes)$color,
@@ -719,11 +726,13 @@ We can also remove edges between nodes with low degrees, under the assumption th
 low_degree_nodes <- V(g2)[degree(g2) < 3]
 g2_pruned <- delete_edges(g2, E(g2)[.from(low_degree_nodes) | .to(low_degree_nodes)])
 
-# Walktrap community detection on the pruned graph
+# walktrap community detection on the pruned graph
 community_walktrap <- cluster_walktrap(g2_pruned)
 
+# color based on community membership
 V(g2_pruned)$color <- factor(community_walktrap$membership)
 
+# plot results
 plot(g2_pruned,
      edge.width = 2,
      edge.color = E(g2_pruned)$color,
