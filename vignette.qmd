@@ -2,7 +2,10 @@
 title: "Network Analysis Vignette"
 author: "Ivy Li, Yamileth Martinez, Jade O'Brien"
 date: today
-format: html
+format: 
+  html:
+    embed-resources: true
+
 ---
 
 # Overview
